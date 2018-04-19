@@ -111,10 +111,10 @@ and type_term (env,locals,dums) t =
 
   | TermQualIdTerm (qualid,term_list) ->
     let pars,dums =
-        List.fold_left (fun (pars,dums) t ->
+      List.fold_left (fun (pars,dums) t ->
           let ty, dums = type_term (env,locals,dums) t in
           ty :: pars, dums
-          ) ([],dums) term_list in
+        ) ([],dums) term_list in
     let pars = List.rev pars in
     let q = (type_qualidentifier (env,locals) qualid pars) in
     Smtlib_ty.unify t.ty q t.p;
@@ -168,17 +168,11 @@ and type_term (env,locals,dums) t =
       ) ((Smtlib_ty.new_type (Smtlib_ty.TVar "A")),dums) match_case_list in
     res,dums
 
-let get_term (env,locals) term =
-  match term.c with
-  | Assert_dec t ->
-    let ty,dums = type_term (env,locals,[]) t in
-    check_if_escaped dums;
-    ty
-  | Assert_dec_par (pars,t) ->
-    let locals = Smtlib_typed_env.extract_pars locals pars in
-    let ty,dums = type_term (env,locals,[]) t in
-    check_if_escaped dums;
-    ty
+let get_term (env,locals) pars term =
+  let locals = Smtlib_typed_env.extract_pars locals pars in
+  let ty,dums = type_term (env,locals,[]) term in
+  check_if_escaped dums;
+  ty
 
 let get_sorted_locals (env,locals) params =
   List.fold_left (fun locals param ->
@@ -186,36 +180,30 @@ let get_sorted_locals (env,locals) params =
       SMap.add symb.c (Smtlib_typed_env.find_sort (env,locals) sort) locals
     ) locals (List.rev params)
 
-let get_fun_def_locals (env,locals) fun_def =
-  match fun_def.c with
-  | Fun_def(name,params,return) ->
-    let locals = get_sorted_locals (env,locals) params in
-    let ret = (Smtlib_typed_env.find_sort (env,locals) return) in
-    let params = List.map (fun param -> let _,sort = param.c in sort) params in
-    locals, ret, (name,params,return)
-  | Fun_def_par(name,pars,params,return) ->
-    let locals = Smtlib_typed_env.extract_pars locals pars in
-    let locals = get_sorted_locals (env,locals) params in
-    let ret = (Smtlib_typed_env.find_sort (env,locals) return) in
-    let params = List.map (fun param -> let _,sort = param.c in sort) params in
-    locals, ret, (name,params,return)
+let get_fun_def_locals (env,locals) (name,pars,params,return) =
+  let locals = Smtlib_typed_env.extract_pars locals pars in
+  let locals = get_sorted_locals (env,locals) params in
+  let ret = (Smtlib_typed_env.find_sort (env,locals) return) in
+  let params = List.map (fun param -> let _,sort = param.c in sort) params in
+  locals, ret, (name,params,return)
 
 (******************************************************************************)
 (************************************ Commands ********************************)
 let type_command (env,locals) c =
   match c.c with
-  | Cmd_Assert(term) | Cmd_CheckEntailment(term) ->
+  | Cmd_Assert(dec) | Cmd_CheckEntailment(dec) ->
+    let pars,t = dec in
     Smtlib_ty.unify
-      (Smtlib_ty.new_type Smtlib_ty.TBool) (get_term (env,locals) term) term.p;
+      (Smtlib_ty.new_type Smtlib_ty.TBool) (get_term (env,locals) pars t) t.p;
     env
   | Cmd_CheckSat ->
     if assert_mode then assert false; env
   | Cmd_CheckSatAssum prop_lit ->
     if assert_mode then assert false; env
-  | Cmd_DeclareConst (symbol,const_dec) ->
-    Smtlib_typed_env.mk_const (env,locals) (symbol,const_dec)
-  | Cmd_DeclareDataType (symbol,datatype_dec) ->
-    Smtlib_typed_env.mk_datatype (env,locals) symbol datatype_dec
+  | Cmd_DeclareConst (symbol,(pars,sort)) ->
+    Smtlib_typed_env.mk_const (env,locals) (symbol,pars,sort)
+  | Cmd_DeclareDataType (symbol,(pars,datatype_dec)) ->
+    Smtlib_typed_env.mk_datatype (env,locals) symbol pars datatype_dec
   | Cmd_DeclareDataTypes (sort_dec_list, datatype_dec_list) ->
     Smtlib_typed_env.mk_datatypes (env,locals) sort_dec_list datatype_dec_list
   | Cmd_DeclareFun (name,fun_dec) ->
@@ -242,7 +230,7 @@ let type_command (env,locals) c =
           let locals,ret,fun_dec = get_fun_def_locals (env,locals) fun_def in
           let env = Smtlib_typed_env.mk_fun_def (env,locals) fun_dec in
           env, (locals,ret) :: locals_term_list
-      ) (env,[]) (List.rev fun_def_list)
+        ) (env,[]) (List.rev fun_def_list)
     in
     List.iter2 (fun (locals,ret) term ->
         let ty,dums = type_term (env,locals,[]) term in

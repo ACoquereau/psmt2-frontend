@@ -215,43 +215,46 @@ constructor_dec:
 
 datatype_dec:
     | LP nonempty_list(constructor_dec) RP
-        { mk_data ($startpos,$endpos) (Datatype_dec_constr $2) }
+        { [],$2 }
     | LP PAR LP nonempty_list(symbol) RP LP nonempty_list(constructor_dec) RP RP
-        { mk_data ($startpos,$endpos) (Datatype_dec_par ($4,$7)) }
+        { $4,$7 }
 
 sort_dec:
     | LP symbol NUMERAL RP { ($2,$3) }
 
 /*** Functions *************************************************************/
 const_dec:
-    | sort { mk_data ($startpos,$endpos) (Const_dec_sort $1) }
+    | sort
+        { [],$1 }
     | LP PAR LP nonempty_list(symbol) RP sort RP
-        { mk_data ($startpos,$endpos) (Const_dec_par ($4,$6)) }
+        { $4,$6 }
 
 fun_dec:
     | LP list(sort) RP sort
-        { mk_data ($startpos,$endpos) (Fun_dec ($2,$4)) }
+        { [],$2,$4 }
     | LP PAR LP nonempty_list(symbol) RP LP list(sort) RP sort RP
-        { mk_data ($startpos,$endpos) (Fun_dec_par ($4,$7,$9)) }
+        { ($4,$7,$9) }
 
 fun_def:
     | symbol LP list(sorted_var) RP sort
-        { mk_data ($startpos,$endpos) (Fun_def ($1,$3,$5)) }
+        { $1,[],$3,$5 }
     | symbol LP PAR LP nonempty_list(symbol) RP LP list(sorted_var) RP sort RP
-        { mk_data ($startpos,$endpos) (Fun_def_par ($1,$5,$8,$10)) }
+        { $1,$5,$8,$10 }
 
 fun_defs:
     | LP fun_def RP { $2 }
+
 /*** Asserts ***************************************************************/
 assert_dec:
-    | term { mk_data ($startpos,$endpos) (Assert_dec $1) }
+    | term
+        { [],$1 }
     | LP PAR LP nonempty_list(symbol) RP term RP
-        { mk_data ($startpos,$endpos) (Assert_dec_par ($4,$6)) }
+        { $4,$6 }
 
 /*** Commands **************************************************************/
 command:
     | LP ASSERT assert_dec RP
-        {mk_data ($startpos,$endpos) (Cmd_Assert $3) }
+        {mk_data ($startpos,$endpos) (Cmd_Assert ($3)) }
     | LP CHECKSAT RP
         {mk_data ($startpos,$endpos) (Cmd_CheckSat) }
     | LP CHECKSATASSUMING LP list(prop_literal) RP RP
@@ -269,7 +272,7 @@ command:
         {mk_data ($startpos,$endpos) (Cmd_DeclareFun($3, $4)) }
     | LP DECLARESORT symbol NUMERAL RP
         {mk_data ($startpos,$endpos) (Cmd_DeclareSort ($3, $4)) }
-   | LP DEFINEFUN fun_def term RP
+    | LP DEFINEFUN fun_def term RP
         {mk_data ($startpos,$endpos) (Cmd_DefineFun ($3,$4)) }
     | LP DEFINEFUNREC fun_def term RP
         {mk_data ($startpos,$endpos) (Cmd_DefineFunRec ($3,$4)) }

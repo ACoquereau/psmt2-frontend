@@ -73,7 +73,7 @@ let get_identifier id =
         ) symb.c index_list}
 
 let check_identifier id arit =
-match id.c with
+  match id.c with
   | IdSymbol(symb) -> assert (arit = 0);
   | IdUnderscoreSymNum(symb,index_list) ->
     assert (List.length index_list = arit)
@@ -130,20 +130,20 @@ let rec find_sort_symb (env,locals) symb pars =
 
 and find_sort (env,locals) sort =
   match sort.c with
-    | SortIdentifier id ->
-      let symb = get_identifier id in
-      let s_ty = find_sort_symb (env,locals) symb [] in
-      Smtlib_ty.unify sort.ty s_ty sort.p;
-      s_ty
-    | SortIdMulti (id, sort_list) ->
-      let symb = get_identifier id in
-      let arg_sort = List.map (fun s ->
-          let s_ty = find_sort (env,locals) s in
-          s_ty
-        ) sort_list in
-      let s_ty = find_sort_symb (env,locals) symb arg_sort in
-      Smtlib_ty.unify sort.ty s_ty sort.p;
-      s_ty
+  | SortIdentifier id ->
+    let symb = get_identifier id in
+    let s_ty = find_sort_symb (env,locals) symb [] in
+    Smtlib_ty.unify sort.ty s_ty sort.p;
+    s_ty
+  | SortIdMulti (id, sort_list) ->
+    let symb = get_identifier id in
+    let arg_sort = List.map (fun s ->
+        let s_ty = find_sort (env,locals) s in
+        s_ty
+      ) sort_list in
+    let s_ty = find_sort_symb (env,locals) symb arg_sort in
+    Smtlib_ty.unify sort.ty s_ty sort.p;
+    s_ty
 
 (******************************************************************************)
 (************************************ Funs ************************************)
@@ -244,8 +244,8 @@ let mk_fun_def (env,locals) (name,params,return) =
 
 let add_funs env funs c =
   List.fold_left (fun env (name,params,return,assoc) ->
-        add_fun_def (env,SMap.empty) ~init:true
-          {c with c=name} params return assoc
+      add_fun_def (env,SMap.empty) ~init:true
+        {c with c=name} params return assoc
     ) env funs
 
 let find_simpl_sort_symb (env,locals) symb params =
@@ -267,23 +267,16 @@ let extract_pars locals pars =
     ) SMap.empty pars; in
   SMap.union (fun k v1 v2 -> Some v2) locals pars
 
-let mk_const (env,locals) (name,const_dec) =
-  match const_dec.c with
-  | Const_dec_sort(sort) ->
-    mk_fun_dec (env,locals) (name,[],sort) None
-  | Const_dec_par(pars,sort) ->
-    let locals = extract_pars locals pars in
-    mk_fun_dec (env,locals) (name,[],sort) None
+let mk_const (env,locals) (name,pars,sort) =
+  let locals = extract_pars locals pars in
+  mk_fun_dec (env,locals) (name,[],sort) None
 
 let mk_fun_def (env,locals) (name,params,return) =
   mk_fun_dec (env,locals) (name,params,return) None
 
-let mk_fun_dec (env,locals) (name,fun_dec) =
-  match fun_dec.c with
-  | Fun_dec(params,return) -> mk_fun_dec (env,locals) (name,params,return) None
-  | Fun_dec_par(pars,params,return) ->
-    let locals = extract_pars locals pars in
-    mk_fun_dec (env,locals) (name,params,return) None
+let mk_fun_dec (env,locals) (name,(pars,params,return)) =
+  let locals = extract_pars locals pars in
+  mk_fun_dec (env,locals) (name,params,return) None
 
 let find_sort_name sort =
   match sort.c with
@@ -347,31 +340,21 @@ let mk_constr_decs (env,locals) dt dt_sort constr_decs =
   in
   env
 
-let mk_dt_dec (env,locals) dt dt_dec =
-  match dt_dec.c with
-  | Datatype_dec_constr(constructor_dec_list) ->
-    let dt_sort = find_simpl_sort_symb (env,locals) dt SMap.empty in
-    mk_constr_decs (env,locals) dt dt_sort constructor_dec_list
-  | Datatype_dec_par((symbol_list), (constructor_dec_list)) ->
-    let dt_pars =
-      List.fold_left (fun pars s ->
-          let a = Smtlib_ty.new_type (Smtlib_ty.TVar s.c) in
-          SMap.add s.c a pars
-        ) SMap.empty symbol_list in
-    let locals = SMap.union (fun k v1 v2 -> Some v2) locals dt_pars in
-    let dt_sort = find_simpl_sort_symb (env,locals) dt dt_pars in
-    mk_constr_decs (env,locals) dt dt_sort constructor_dec_list
+let mk_dt_dec (env,locals) dt (pars,cst_dec_list) =
+  let dt_pars =
+    List.fold_left (fun pars s ->
+        let a = Smtlib_ty.new_type (Smtlib_ty.TVar s.c) in
+        SMap.add s.c a pars
+      ) SMap.empty pars in
+  let locals = SMap.union (fun k v1 v2 -> Some v2) locals dt_pars in
+  let dt_sort = find_simpl_sort_symb (env,locals) dt dt_pars in
+  mk_constr_decs (env,locals) dt dt_sort cst_dec_list
 
-let mk_datatype (env,locals) dt dt_dec =
-  let arit =
-    match dt_dec.c with
-    | Datatype_dec_constr _ -> 0
-    | Datatype_dec_par((symbol_list), _) ->
-      List.length symbol_list
-  in
+let mk_datatype (env,locals) dt pars dt_dec =
+  let arit = List.length pars in
   let sort_def = mk_sort_definition arit 0 true in
   let env = mk_sort (env,locals) dt sort_def in
-  mk_dt_dec (env,locals) dt dt_dec
+  mk_dt_dec (env,locals) dt (pars,dt_dec)
 
 let mk_datatypes (env,locals) sort_decs datatype_decs =
   let env = List.fold_left (fun env (symb,arit) ->
