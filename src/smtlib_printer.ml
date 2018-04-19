@@ -50,7 +50,7 @@ let rec print_var_binding (var,bind) =
 
 and print_var_bindings varbindings =
   List.fold_left (fun acc varbinding ->
-      sprintf "%s %s" acc (print_var_binding varbinding.c)) "" varbindings
+      sprintf "%s %s" acc (print_var_binding varbinding)) "" varbindings
 
 and print_term t =
   let s =
@@ -84,7 +84,7 @@ and print_sorts sorts =
 
 and print_sorted_vars sorted_vars =
   List.fold_left (fun acc sort ->
-      sprintf "%s %s" acc (print_sorted_var sort.c)) "" sorted_vars
+      sprintf "%s %s" acc (print_sorted_var sort)) "" sorted_vars
 
 let print_assert pars t =
   if pars = [] then

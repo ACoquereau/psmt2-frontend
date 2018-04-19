@@ -110,10 +110,10 @@ sexpr:
 
 /*************************************************************************/
 varbinding:
-    | LP symbol term RP { mk_data ($startpos,$endpos) ($2,$3) }
+    | LP symbol term RP { $2,$3 }
 
 sorted_var:
-    | LP symbol sort RP { mk_data ($startpos,$endpos) ($2,$3) }
+    | LP symbol sort RP { $2,$3 }
 
 qualidentifier:
     | identifier { mk_data ($startpos,$endpos) (QualIdentifierId $1) }
@@ -121,9 +121,9 @@ qualidentifier:
       { mk_data ($startpos,$endpos) (QualIdentifierAs($3, $4)) }
 
 pattern:
-    | symbol { mk_data ($startpos,$endpos) (PatternSymb $1) }
+    | symbol { $1,[] }
     | LP symbol nonempty_list(symbol) RP
-       { mk_data ($startpos,$endpos) (PatternSymbplus ($2, $3)) }
+       { $2, $3 }
 
 match_case:
     | LP pattern term RP { ($2,$3) }

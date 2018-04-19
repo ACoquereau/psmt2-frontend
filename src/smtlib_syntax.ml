@@ -121,8 +121,7 @@ and sort_aux =
 and sort = sort_aux data
 
 (* typed variable *)
-and sorted_var_aux = symbol * sort
-and sorted_var =  sorted_var_aux data
+and sorted_var = symbol * sort
 
 (* qualidentifiers *)
 and qualidentifier_aux =
@@ -131,13 +130,7 @@ and qualidentifier_aux =
 and qualidentifier = qualidentifier_aux data
 
 (* valued variable *)
-and varbinding_aux = symbol * term
-and varbinding = varbinding_aux data
-
-and pattern_aux =
-| PatternSymb of symbol
-| PatternSymbplus of symbol * symbol list
-and pattern = pattern_aux data
+and varbinding = symbol * term
 
 (* terms *)
 and term_aux =
@@ -148,7 +141,7 @@ and term_aux =
 | TermForAllTerm of sorted_var list * term
 | TermExistsTerm of sorted_var list * term
 | TermExclimationPt of term * key_term list
-| TermMatch of term * (pattern * term) list
+| TermMatch of term * ((symbol * symbol list) * term) list
 and term = term_aux data
 
 (* datatypes *)

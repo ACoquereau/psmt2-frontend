@@ -63,22 +63,15 @@ let type_qualidentifier (env,locals) q pars =
     Smtlib_ty.unify q.ty ty q.p;
     ty
 
-let type_pattern (env,locals) ty pat =
-  match pat.c with
-  | PatternSymb (symb) ->
-    let ty = Smtlib_ty.new_type (Smtlib_ty.TFun ([],ty)) in
-    let cst_def = find_constr env symb in
-    inst_and_unify (env,locals) Smtlib_ty.IMap.empty ty cst_def symb.p;
-    SMap.empty
-  | PatternSymbplus (symb, pars) ->
-    let locals,pars = List.fold_left (fun (locals,pars) par ->
-        let ty = (Smtlib_ty.new_type (Smtlib_ty.TVar(par.c))) in
-        SMap.add par.c ty locals, ty :: pars
-      ) (locals,[]) (List.rev pars) in
-    let ty = Smtlib_ty.new_type (Smtlib_ty.TFun (pars,ty)) in
-    let cst_def = find_constr env symb in
-    inst_and_unify (env,locals) Smtlib_ty.IMap.empty ty cst_def symb.p;
-    locals
+let type_pattern (env,locals) ty (symb, pars) =
+  let locals,pars = List.fold_left (fun (locals,pars) par ->
+      let ty = (Smtlib_ty.new_type (Smtlib_ty.TVar(par.c))) in
+      SMap.add par.c ty locals, ty :: pars
+    ) (locals,[]) (List.rev pars) in
+  let ty = Smtlib_ty.new_type (Smtlib_ty.TFun (pars,ty)) in
+  let cst_def = find_constr env symb in
+  inst_and_unify (env,locals) Smtlib_ty.IMap.empty ty cst_def symb.p;
+  locals
 
 let rec type_match_case (env,locals,dums) ty (pattern,term) =
   let pars = type_pattern (env,locals) ty pattern in
@@ -121,8 +114,7 @@ and type_term (env,locals,dums) t =
     t.ty, check_if_dummy t dums
 
   | TermLetTerm (varbinding_list,term) ->
-    let locals,dums = List.fold_left (fun (locals,dums) var_bind ->
-        let symb,term = var_bind.c in
+    let locals,dums = List.fold_left (fun (locals,dums) (symb,term) ->
         let ty, dums = type_term (env,locals,dums) term in
         SMap.add symb.c ty locals, dums
       ) (locals,dums) varbinding_list in
@@ -131,8 +123,7 @@ and type_term (env,locals,dums) t =
     t.ty, dums
 
   | TermForAllTerm (sorted_var_list, term) ->
-    let locals = List.fold_left (fun locals sorted ->
-        let symb,sort = sorted.c in
+    let locals = List.fold_left (fun locals (symb,sort) ->
         SMap.add symb.c (find_sort (env,locals) sort) locals
       ) locals sorted_var_list in
     let ty,dums = type_term (env,locals,dums) term in
@@ -140,8 +131,7 @@ and type_term (env,locals,dums) t =
     t.ty, dums
 
   | TermExistsTerm (sorted_var_list, term) ->
-    let locals = List.fold_left (fun locals sorted ->
-        let symb,sort = sorted.c in
+    let locals = List.fold_left (fun locals (symb,sort) ->
         SMap.add symb.c (find_sort (env,locals) sort) locals
       ) locals sorted_var_list in
     let ty,dums = type_term (env,locals,dums) term in
@@ -175,8 +165,7 @@ let get_term (env,locals) pars term =
   ty
 
 let get_sorted_locals (env,locals) params =
-  List.fold_left (fun locals param ->
-      let symb,sort = param.c in
+  List.fold_left (fun locals (symb,sort) ->
       SMap.add symb.c (Smtlib_typed_env.find_sort (env,locals) sort) locals
     ) locals (List.rev params)
 
@@ -184,7 +173,7 @@ let get_fun_def_locals (env,locals) (name,pars,params,return) =
   let locals = Smtlib_typed_env.extract_pars locals pars in
   let locals = get_sorted_locals (env,locals) params in
   let ret = (Smtlib_typed_env.find_sort (env,locals) return) in
-  let params = List.map (fun param -> let _,sort = param.c in sort) params in
+  let params = List.map (fun (_,sort) -> sort) params in
   locals, ret, (name,params,return)
 
 (******************************************************************************)
