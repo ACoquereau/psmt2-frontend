@@ -199,10 +199,10 @@ edit:
 	emacs src/*ml* &
 
 opam-deps:
-	opam install ocamlfind
+	opam install ocamlfind menhir
 
 opam-tests-deps:
-	opam install ocamlfind num
+	opam install ocamlfind menhir
 
 repin:
 	opam remove psmt2-frontend
