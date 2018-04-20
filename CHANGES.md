@@ -1,4 +1,4 @@
-first public 0.1, April xx, 2018
+first public 0.1, April 20, 2018
 ================================
 
-* xxx
+- First release

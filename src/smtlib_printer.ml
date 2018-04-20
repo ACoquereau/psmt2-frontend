@@ -50,7 +50,7 @@ let rec print_var_binding (var,bind) =
 
 and print_var_bindings varbindings =
   List.fold_left (fun acc varbinding ->
-      sprintf "%s %s" acc (print_var_binding varbinding.c)) "" varbindings
+      sprintf "%s %s" acc (print_var_binding varbinding)) "" varbindings
 
 and print_term t =
   let s =
@@ -84,33 +84,29 @@ and print_sorts sorts =
 
 and print_sorted_vars sorted_vars =
   List.fold_left (fun acc sort ->
-      sprintf "%s %s" acc (print_sorted_var sort.c)) "" sorted_vars
+      sprintf "%s %s" acc (print_sorted_var sort)) "" sorted_vars
 
-let print_assert t =
-  match t.c with
-  | Assert_dec(t) -> print_term t
-  | Assert_dec_par(pars,t) ->
+let print_assert pars t =
+  if pars = [] then
+      sprintf "%s" (print_term t)
+  else
     sprintf "(par (%s) %s)" (print_pars pars) (print_term t)
 
-let print_const_dec cst =
-  match cst.c with
-  | Const_dec_sort s -> print_sort s
-  | Const_dec_par (pars,s) ->
-    sprintf "(par (%s) %s)" (print_pars pars) (print_sort s)
+let print_const_dec pars sort =
+  match pars with
+  | [] -> print_sort sort
+  | _ -> sprintf "(par (%s) %s)" (print_pars pars) (print_sort sort)
 
-let print_fun_dec fun_dec =
-  match fun_dec.c with
-  | Fun_dec (sl,s) -> sprintf "(%s) %s" (print_sorts sl) (print_sort s)
-  | Fun_dec_par (pars,sl,s) ->
-    sprintf "(par (%s) (%s) %s)"
+let print_fun_dec (pars,sl,s) =
+match pars with
+  | [] -> sprintf "(%s) %s" (print_sorts sl) (print_sort s)
+  | _ -> sprintf "(par (%s) (%s) %s)"
       (print_pars pars) (print_sorts sl) (print_sort s)
 
-let print_fun_def fun_def =
-  match fun_def.c with
-  | Fun_def (symb,svl,s) ->
-    sprintf "%s (%s) %s" symb.c (print_sorted_vars svl) (print_sort s)
-  | Fun_def_par (symb,pars,svl,s) ->
-    sprintf "%s (par (%s) (%s) %s)"
+let print_fun_def (symb,pars,svl,s) =
+  match pars with
+  | [] -> sprintf "%s (%s) %s" symb.c (print_sorted_vars svl) (print_sort s)
+  | _ -> sprintf "%s (par (%s) (%s) %s)"
       symb.c (print_pars pars) (print_sorted_vars svl) (print_sort s)
 
 let print_sort_dec (s,n) =
@@ -124,12 +120,10 @@ let print_cst_dec (s,selector_list) =
     s.c
     (print_list print_selector selector_list)
 
-let print_dt_dec dt_dec =
-  match dt_dec.c with
-  | Datatype_dec_constr cst_dec_list ->
-    sprintf "(%s)" (print_list print_cst_dec cst_dec_list)
-  | Datatype_dec_par (pars,cst_dec_list) ->
-    sprintf "(par (%s) (%s))"
+let print_dt_dec (pars,cst_dec_list) =
+  match pars with
+  | [] -> sprintf "(%s)" (print_list print_cst_dec cst_dec_list)
+  | _ -> sprintf "(par (%s) (%s))"
       (print_pars pars)
       (print_list print_cst_dec cst_dec_list)
 
@@ -144,8 +138,9 @@ let print_attribute a = assert false
 
 let print_command c =
   match c.c with
-  | Cmd_Assert(t) -> printf "(assert %s)\n%!" (print_assert t)
-  | Cmd_CheckEntailment(t) ->     printf "(assert %s)\n%!" (print_assert t)
+  | Cmd_Assert(pars,t) -> printf "(assert %s)\n%!" (print_assert pars t)
+  | Cmd_CheckEntailment(dec) ->
+    let pars,t = dec in printf "(check-entailment %s)\n%!" (print_assert pars t)
 
   | Cmd_CheckSat ->
     printf "(checksat)\n%!"
@@ -153,11 +148,11 @@ let print_command c =
     printf "(check-sat-assuming %s)\n%!"
       (print_list print_pro_lit prop_lit_list)
 
-  | Cmd_DeclareConst(symbol,const_dec) ->
-    printf "(declare-const %s %s)\n%!" symbol.c (print_const_dec const_dec)
+  | Cmd_DeclareConst(symbol,(pars,sort)) ->
+    printf "(declare-const %s %s)\n%!" symbol.c (print_const_dec pars sort)
 
-  | Cmd_DeclareDataType(symbol,dt_dec) ->
-    printf "(declare-datatype %s %s)\n%!" symbol.c (print_dt_dec dt_dec)
+  | Cmd_DeclareDataType(symbol,(pars,dt_dec)) ->
+    printf "(declare-datatype %s %s)\n%!" symbol.c (print_dt_dec (pars,dt_dec))
   | Cmd_DeclareDataTypes(sort_dec_list,dt_dec_list) ->
     printf "(declare-datatypes %s %s)\n%!"
     (print_list print_sort_dec sort_dec_list)

@@ -121,8 +121,7 @@ and sort_aux =
 and sort = sort_aux data
 
 (* typed variable *)
-and sorted_var_aux = symbol * sort
-and sorted_var =  sorted_var_aux data
+and sorted_var = symbol * sort
 
 (* qualidentifiers *)
 and qualidentifier_aux =
@@ -131,13 +130,7 @@ and qualidentifier_aux =
 and qualidentifier = qualidentifier_aux data
 
 (* valued variable *)
-and varbinding_aux = symbol * term
-and varbinding = varbinding_aux data
-
-and pattern_aux =
-  | PatternSymb of symbol
-  | PatternSymbplus of symbol * symbol list
-and pattern = pattern_aux data
+and varbinding = symbol * term
 
 (* terms *)
 and term_aux =
@@ -148,54 +141,30 @@ and term_aux =
 | TermForAllTerm of sorted_var list * term
 | TermExistsTerm of sorted_var list * term
 | TermExclimationPt of term * key_term list
-| TermMatch of term * (pattern * term) list
+| TermMatch of term * ((symbol * symbol list) * term) list
 and term = term_aux data
 
 (* datatypes *)
 and sort_dec = symbol * string
 and selector_dec = symbol * sort
 and constructor_dec = symbol * selector_dec list
-and datatype_dec_aux =
-| Datatype_dec_constr of constructor_dec list
-| Datatype_dec_par of (symbol list) * (constructor_dec list)
-and datatype_dec = datatype_dec_aux data
-
-(* functions *)
-and fun_dec_aux =
-| Fun_dec of sort list * sort
-| Fun_dec_par of symbol list * sort list * sort
-and fun_dec = fun_dec_aux data
-
-and fun_def_aux =
-| Fun_def of symbol * sorted_var list * sort
-| Fun_def_par of symbol * symbol list * sorted_var list * sort
-and fun_def = fun_def_aux data
-
-and const_dec_aux =
-| Const_dec_sort of sort
-| Const_dec_par of symbol list * sort
-and const_dec = const_dec_aux data
-
-(* asserts *)
-and assert_dec_aux =
-| Assert_dec of term
-| Assert_dec_par of symbol list * term
-and assert_dec = assert_dec_aux data
 
 (* script commands *)
 type command_aux =
-| Cmd_Assert of assert_dec
+| Cmd_Assert of (symbol list * term)
 | Cmd_CheckSat
 | Cmd_CheckSatAssum of prop_literal list
-| Cmd_CheckEntailment of assert_dec
-| Cmd_DeclareConst of symbol * const_dec
-| Cmd_DeclareDataType of symbol * datatype_dec
-| Cmd_DeclareDataTypes of sort_dec list * datatype_dec list
-| Cmd_DeclareFun of symbol * fun_dec
+| Cmd_CheckEntailment of (symbol list * term)
+| Cmd_DeclareConst of symbol * (symbol list * sort)
+| Cmd_DeclareDataType of symbol * ((symbol list) * (constructor_dec list))
+| Cmd_DeclareDataTypes of
+    sort_dec list * ((symbol list) * (constructor_dec list)) list
+| Cmd_DeclareFun of symbol * (symbol list * sort list * sort)
 | Cmd_DeclareSort of symbol * string
-| Cmd_DefineFun of fun_def * term
-| Cmd_DefineFunRec of fun_def * term
-| Cmd_DefineFunsRec of fun_def list * term list
+| Cmd_DefineFun of (symbol * symbol list * sorted_var list * sort) * term
+| Cmd_DefineFunRec of (symbol * symbol list * sorted_var list * sort) * term
+| Cmd_DefineFunsRec of
+    (symbol * symbol list * sorted_var list * sort) list * term list
 | Cmd_DefineSort of symbol * symbol list * sort
 | Cmd_Echo of symbol
 | Cmd_GetAssert
