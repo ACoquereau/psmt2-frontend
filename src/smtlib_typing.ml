@@ -1,9 +1,7 @@
+open Options
 open Smtlib_error
 open Smtlib_syntax
 open Smtlib_typed_env
-
-let assert_mode = false
-let print_mode = false
 
 (******************************************************************************)
 let inst_and_unify (env,locals) m a b pos =
@@ -87,7 +85,7 @@ and type_key_term (env,locals,dums) key_term =
         dums
       ) [] term_list
   | Named(symb) ->
-    if Options.verbose () then
+    if Options.verbose () > 0 then
       Printf.eprintf "[Warning] (! :named not yet supported)\n%!";
     dums
 
@@ -143,8 +141,6 @@ and type_term (env,locals,dums) t =
         type_key_term (env,locals,dums) kt
       ) dums key_term_list in
     let ty,dums = type_term (env,locals,dums) term in
-    if Options.verbose () then
-      Printf.eprintf ":named not yet implemented\n%!";
     ty, dums
 
   | TermMatch (term, match_case_list) ->
@@ -185,10 +181,10 @@ let type_command (env,locals) c =
     Smtlib_ty.unify
       (Smtlib_ty.new_type Smtlib_ty.TBool) (get_term (env,locals) pars t) t.p;
     env
-  | Cmd_CheckSat ->
-    if assert_mode then assert false; env
+  | Cmd_CheckSat -> env
   | Cmd_CheckSatAssum prop_lit ->
-    if assert_mode then assert false; env
+    Options.check_command "check-sat-assuming";
+    env
   | Cmd_DeclareConst (symbol,(pars,sort)) ->
     Smtlib_typed_env.mk_const (env,locals) (symbol,pars,sort)
   | Cmd_DeclareDataType (symbol,(pars,datatype_dec)) ->
@@ -229,36 +225,21 @@ let type_command (env,locals) c =
     env
   | Cmd_DefineSort (symbol, symbol_list, sort) ->
     Smtlib_typed_env.mk_sort_def (env,locals) symbol symbol_list sort
-  | Cmd_Echo (attribute_value) ->
-    if assert_mode then assert false; env
-  | Cmd_GetAssert ->
-    if assert_mode then assert false; env
-  | Cmd_GetProof ->
-    if assert_mode then assert false; env
-  | Cmd_GetUnsatCore ->
-    if assert_mode then assert false; env
-  | Cmd_GetValue (term_list) ->
-    if assert_mode then assert false; env
-  | Cmd_GetAssign ->
-    if assert_mode then assert false; env
-  | Cmd_GetOption (keyword) ->
-    if assert_mode then assert false; env
-  | Cmd_GetInfo (key_info) ->
-    if assert_mode then assert false; env
-  | Cmd_GetModel ->
-    if assert_mode then assert false; env
-  | Cmd_GetUnsatAssumptions ->
-    if assert_mode then assert false; env
-  | Cmd_Reset ->
-    if assert_mode then assert false; env
-  | Cmd_ResetAssert ->
-    if assert_mode then assert false; env
-  | Cmd_SetLogic(symb) ->
-    Smtlib_typed_logic.set_logic env symb
-  | Cmd_SetOption (option) ->
-    if assert_mode then assert false; env
-  | Cmd_SetInfo (attribute) ->
-    if assert_mode then assert false; env
+  | Cmd_Echo (attribute_value) -> Options.check_command "echo"; env
+  | Cmd_GetAssert -> Options.check_command "get-assertions"; env
+  | Cmd_GetProof -> Options.check_command "get-proof"; env
+  | Cmd_GetUnsatCore -> Options.check_command "get-unsat-core"; env
+  | Cmd_GetValue (term_list) -> Options.check_command "get-value"; env
+  | Cmd_GetAssign -> Options.check_command "get-assignement"; env
+  | Cmd_GetOption (keyword) -> Options.check_command "get-option"; env
+  | Cmd_GetInfo (key_info) -> Options.check_command "get-info"; env
+  | Cmd_GetModel -> Options.check_command "get-model"; env
+  | Cmd_GetUnsatAssumptions -> Options.check_command "get-unsat-core"; env
+  | Cmd_Reset -> Options.check_command "reset"; env
+  | Cmd_ResetAssert -> Options.check_command "reset-assertions"; env
+  | Cmd_SetLogic(symb) -> Smtlib_typed_logic.set_logic env symb
+  | Cmd_SetOption (option) -> Options.check_command "set-option"; env
+  | Cmd_SetInfo (attribute) -> Options.check_command "set-info"; env
   | Cmd_Push _ | Cmd_Pop _ ->
     error (Incremental_error ("incremental command not suported")) c.p
   | Cmd_Exit -> env
@@ -276,10 +257,9 @@ let typing parsed_ast =
   let env =
     List.fold_left (fun env c ->
         let env = type_command (env,SMap.empty)  c in
-        if print_mode then Smtlib_printer.print_command c;
+        if Options.verbose () > 0 then Smtlib_printer.print_command c;
         env
       ) env parsed_ast
-  in if false then begin
-    Smtlib_printer.print parsed_ast;
+  in if Options.verbose () > 1 then begin
     Smtlib_typed_env.print_env env;
   end

@@ -1,5 +1,5 @@
 open Smtlib_typed_env
-open Smtlib_error
+open Options
 
 type th_def = {
   sorts :
@@ -235,9 +235,9 @@ let set_logic env s =
     set_is_uf true;
 
   if contains logic "BV" then
-    Printf.eprintf "[Warning] Bitvector not yet implemented\n%!";
+    check_command "Bitvector";
   if contains logic "FP" then
-    Printf.eprintf "[Warning] Floating point not yet implemented\n%!";
+    check_command "Floating point";
 
   if all || contains logic "AX" || contains logic "A" then
       theories := Arrays :: !theories;

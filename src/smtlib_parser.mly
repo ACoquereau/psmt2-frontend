@@ -313,7 +313,7 @@ command:
     | LP SETINFO attribute RP
         {mk_data ($startpos,$endpos) (Cmd_SetInfo $3) }
     | LP SETLOGIC symbol RP
-        {Smtlib_error.set_logic true;
+        {Options.set_logic true;
          mk_data ($startpos,$endpos) (Cmd_SetLogic $3) }
     | LP SETOPTION option RP
         {mk_data ($startpos,$endpos) (Cmd_SetOption $3) }

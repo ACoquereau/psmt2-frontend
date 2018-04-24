@@ -201,9 +201,26 @@ edit:
 opam-deps:
 	opam install ocamlfind menhir
 
-opam-tests-deps:
+opam-test-deps:
 	opam install ocamlfind menhir
 
 repin:
 	opam remove psmt2-frontend
 	opam pin add . --y
+
+
+local-tests: all
+##	minimal example with solve: byte and opt >> lib is local
+	$(OCAMLC) -o standalone_minimal_local.byte -I src -I tests psmt2Frontend.cma nums.cma tests/standalone_minimal.ml
+	./standalone_minimal_local.byte tests/min.smt2 2> /dev/null
+	$(OCAMLOPT) -o standalone_minimal_local.opt -I src -I tests psmt2Frontend.cmxa nums.cmxa tests/standalone_minimal.ml
+	./standalone_minimal_local.opt tests/min.smt2 2> /dev/null
+
+opam-installed-tests: repin
+##	minimal example with solve: byte and opt >> lib is pinned with OPAM
+	$(OCAMLC) -o standalone_minimal_opam.byte -I `ocamlfind query psmt2-frontend`  -I tests psmt2Frontend.cma tests/standalone_minimal.ml
+	./standalone_minimal_opam.byte tests/min.smt2 2> /dev/null
+	$(OCAMLOPT) -o standalone_minimal_opam.opt -I `ocamlfind query psmt2-frontend`  -I tests psmt2Frontend.cmxa tests/standalone_minimal.ml
+	./standalone_minimal_opam.opt tests/min.smt2 2> /dev/null
+
+tests: local-tests opam-installed-tests
