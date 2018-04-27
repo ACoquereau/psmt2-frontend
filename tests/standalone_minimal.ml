@@ -57,16 +57,11 @@ let () =
     let lexbuf = Lexing.from_channel in_chan in
     try
       let parsed = ref (Smtlib_parser.commands Smtlib_lexer.token lexbuf) in
-      if !parse_only
-      then begin
-	  printf "%s@." (Smtlib_error.get_status ());
-	  exit 0
-	end
-      else begin
+      if not !parse_only then
         Smtlib_typing.typing !parsed;
-        printf "%s@." (Smtlib_error.get_status ());
-        exit 0
-      end
+      if not (Options.quiet ()) then
+        printf "%s@." (Options.status ());
+      exit 0
     with
     | Smtlib_parser.Error ->
       let loc = Smtlib_lexer.current_pos lexbuf in

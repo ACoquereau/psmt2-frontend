@@ -68,11 +68,11 @@ CMO =   src/version.cmo \
 	src/smtlib_error.cmo \
 	src/smtlib_ty.cmo \
 	src/smtlib_syntax.cmo \
-	src/smtlib_printer.cmo \
 	src/smtlib_parser.cmo \
 	src/smtlib_lexer.cmo \
 	src/smtlib_typed_env.cmo \
 	src/smtlib_typed_logic.cmo \
+	src/smtlib_printer.cmo \
 	src/smtlib_typing.cmo
 
 CMX = $(CMO:.cmo=.cmx)

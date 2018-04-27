@@ -17,7 +17,8 @@ let print_constant cst =
 let print_identifier id =
   match id.c with
   | IdSymbol s -> s.c
-  | IdUnderscoreSymNum _ -> assert false
+  | IdUnderscoreSymNum _ ->
+    Options.check_command "printer for (_ .."; ""
 
 let rec print_sort s =
   match s.c with
@@ -70,7 +71,8 @@ and print_term t =
       sprintf "(exists (%s) %s)"
         (print_sorted_vars sorted_vars) (print_term term)
     | TermExclimationPt (term,key_term_list) -> (print_term term)
-    | TermMatch (term,pattern_term_list) -> assert false
+    | TermMatch (term,pattern_term_list) ->
+      Options.check_command "printer for match terms"; ""
   in
   sprintf "%s:%s " s ((to_string t.ty))
 
@@ -132,9 +134,12 @@ let print_pro_lit p =
   | PropLit(s) -> sprintf "%s" s.c
   | PropLitNot(s) -> sprintf "(not %s)" s.c
 
-let print_option o = assert false
-let print_info key_info = assert false
-let print_attribute a = assert false
+let print_option o =
+  Options.check_command "printer for get/set-option"; ""
+let print_info key_info =
+  Options.check_command "printer for get/set-option"; ""
+let print_attribute a =
+  Options.check_command "printer for get/set-option"; ""
 
 let print_command c =
   match c.c with

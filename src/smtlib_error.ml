@@ -59,6 +59,6 @@ let print fmt f e p =
 
 
 let error e p =
-  print err_formatter "" e p;
+  (* print err_formatter "" e p; *)
   raise (Error (e,p))
 
