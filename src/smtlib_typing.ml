@@ -8,15 +8,15 @@ let inst_and_unify (env,locals) m a b pos =
   let m, a = Smtlib_ty.inst locals m a in
   Smtlib_ty.unify a b pos
 
-let find_par_ty (env,locals) symb pars =
-  let ty = try
-      let res = SMap.find symb.c locals in
-      assert (List.length pars = 0);
-      symb.is_quantif <- true;
-      res
-    with Not_found -> find_fun (env,locals) symb pars
-  in
-  ty
+let find_par_ty (env,locals) symb pars args =
+  try
+    let res = SMap.find symb.c locals in
+    symb.is_quantif <- true;
+    res
+  with Not_found -> try
+      find_fun (env,locals) symb pars args
+    with Not_found ->
+      error (Typing_error ("Undefined fun : " ^ symb.c)) symb.p
 
 let check_if_dummy t l =
   if Smtlib_ty.is_dummy t.ty then
@@ -31,7 +31,7 @@ let check_if_escaped l =
       end;
     ) l
 
-let type_cst c =
+let type_cst c pos=
   match c with
   | Const_Dec (s) -> Smtlib_ty.new_type Smtlib_ty.TReal
   | Const_Num (s) ->
@@ -40,21 +40,25 @@ let type_cst c =
   | Const_Str (s) -> Smtlib_ty.new_type Smtlib_ty.TString
   | Const_Hex (s) ->
     Smtlib_ty.new_type
-      (if get_is_real () then Smtlib_ty.TReal else Smtlib_ty.TInt)
+      (if get_is_fp () then Smtlib_ty.TBitVec(0)
+       else if get_is_real () then Smtlib_ty.TReal
+       else Smtlib_ty.TInt)
   | Const_Bin (s) ->
     Smtlib_ty.new_type
-      (if get_is_real () then Smtlib_ty.TReal else Smtlib_ty.TInt)
+      (if get_is_fp () then Smtlib_ty.TBitVec(0)
+       else if get_is_real () then Smtlib_ty.TReal
+       else Smtlib_ty.TInt)
 
 let type_qualidentifier (env,locals) q pars =
   match q.c with
   | QualIdentifierId (id) ->
-    let symb = get_identifier id in
-    let ty = find_par_ty (env,locals) symb pars in
+    let symb,idl = get_identifier id in
+    let ty = find_par_ty (env,locals) symb pars idl in
     inst_and_unify (env,locals) Smtlib_ty.IMap.empty ty q.ty q.p;
     ty
   | QualIdentifierAs (id, sort) ->
-    let symb = get_identifier id in
-    let ty = find_par_ty (env,locals) symb pars in
+    let symb,idl = get_identifier id in
+    let ty = find_par_ty (env,locals) symb pars idl in
     let ty_sort = find_sort (env,locals) sort in
     inst_and_unify (env,locals) Smtlib_ty.IMap.empty ty ty_sort symb.p;
     Smtlib_ty.unify sort.ty ty_sort sort.p;
@@ -92,7 +96,7 @@ and type_key_term (env,locals,dums) key_term =
 and type_term (env,locals,dums) t =
   match t.c with
   | TermSpecConst (cst) ->
-    Smtlib_ty.unify t.ty (type_cst cst) t.p;
+    Smtlib_ty.unify t.ty (type_cst cst t.p) t.p;
     t.ty, dums
 
   | TermQualIdentifier (qualid) ->
@@ -261,5 +265,5 @@ let typing parsed_ast =
         env
       ) env parsed_ast
   in if Options.verbose () > 1 then begin
-    Smtlib_typed_env.print_env env;
+    Smtlib_printer.print_env env;
   end

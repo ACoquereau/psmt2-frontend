@@ -25,30 +25,14 @@ type env = {
            (string ->
             (Smtlib_ty.ty list * int list) -> Smtlib_ty.desc)) SMap.t;
   funs : fun_def list SMap.t;
+  par_funs : (string list -> fun_def) list SMap.t;
 }
 
 let empty () = {
   sorts = SMap.empty;
   funs = SMap.empty;
+  par_funs = SMap.empty;
 }
-
-(******************************************************************************)
-(*********************************** Printer **********************************)
-let print_sort s (arit_s, arit_t) =
-  Printf.printf "%s : %d / %d \n%!" s arit_s arit_t
-
-let print_fun s fun_def =
-  Printf.printf "%s : %s \n%!" s (Smtlib_ty.to_string fun_def.params)
-
-let print_env env =
-  SMap.iter (fun s (arit, _) ->
-      print_sort s arit
-    ) env.sorts;
-  SMap.iter (fun s fun_defs ->
-      List.iter (fun fun_def ->
-          print_fun s fun_def
-        ) fun_defs
-    ) env.funs
 
 open Smtlib_syntax
 (******************************************************************************)
@@ -66,11 +50,9 @@ let get_index i =
 
 let get_identifier id =
   match id.c with
-  | IdSymbol(symb) -> symb
+  | IdSymbol(symb) -> symb, []
   | IdUnderscoreSymNum(symb,index_list) ->
-    { symb with c = List.fold_left (fun s i ->
-          Printf.sprintf "%s %s" s (get_index i)
-        ) symb.c index_list}
+    symb, List.map get_index index_list
 
 let check_identifier id arit =
   match id.c with
@@ -121,27 +103,42 @@ let add_sorts env sorts =
       {env with sorts = SMap.add name sort env.sorts}
     ) env sorts
 
-let rec find_sort_symb (env,locals) symb pars =
+let rec find_sort_symb (env,locals) symb pars_s pars_t=
   try SMap.find symb.c locals
   with Not_found ->
     let (arit_s,arit_t),fun_sort = find_sort_def env symb in
-    assert (List.length pars = arit_s);
-    Smtlib_ty.new_type (fun_sort symb.c (pars,[]))
+    assert (List.length pars_s = arit_s);
+    assert (List.length pars_t = arit_t);
+    Smtlib_ty.new_type (fun_sort symb.c (pars_s,pars_t))
 
 and find_sort (env,locals) sort =
   match sort.c with
-  | SortIdentifier id ->
-    let symb = get_identifier id in
-    let s_ty = find_sort_symb (env,locals) symb [] in
-    Smtlib_ty.unify sort.ty s_ty sort.p;
-    s_ty
+  | SortIdentifier(id) -> begin
+      match id.c with
+      | IdSymbol(symb) ->
+        let s_ty = find_sort_symb (env,locals) symb [] [] in
+        Smtlib_ty.unify sort.ty s_ty sort.p;
+        s_ty
+      | IdUnderscoreSymNum(s,l) ->
+        let l = List.map (fun i ->
+            try int_of_string (get_index i)
+            with Not_found ->
+              error (Sort_declaration_error
+                       (Printf.sprintf "Args of %s should be integers" s.c)
+                    ) id.p
+          ) l
+        in
+        let s_ty = find_sort_symb (env,locals) s [] l in
+        Smtlib_ty.unify sort.ty s_ty sort.p;
+        s_ty
+    end
   | SortIdMulti (id, sort_list) ->
-    let symb = get_identifier id in
+    let symb,_ = get_identifier id in
     let arg_sort = List.map (fun s ->
         let s_ty = find_sort (env,locals) s in
         s_ty
       ) sort_list in
-    let s_ty = find_sort_symb (env,locals) symb arg_sort in
+    let s_ty = find_sort_symb (env,locals) symb arg_sort [] in
     Smtlib_ty.unify sort.ty s_ty sort.p;
     s_ty
 
@@ -186,18 +183,22 @@ and compare_fun_def (env,locals) symb ty funs =
   in
   aux funs
 
-let find_fun (env,locals) symb params =
-  try
-    let ty = Smtlib_ty.new_type
-        (Smtlib_ty.TFun (params,Smtlib_ty.new_type Smtlib_ty.TDummy)) in
-    let defs = SMap.find symb.c env.funs in
-    let res = compare_fun_def (env,locals) symb ty defs in
-    match res with
-    | Some def -> def
-    | None ->
-      error (Typing_error (Printf.sprintf "Undefined fun definition %s : %s"
-                             symb.c (Smtlib_ty.to_string ty))) symb.p
-  with Not_found -> error (Typing_error ("Undefined fun : " ^ symb.c)) symb.p
+let find_fun (env,locals) symb params args=
+  let defs =
+    if args == [] then
+      SMap.find symb.c env.funs
+    else
+      List.map (fun def -> def args) (SMap.find symb.c env.par_funs)
+  in
+  let ty = Smtlib_ty.new_type
+      (Smtlib_ty.TFun (params,Smtlib_ty.new_type Smtlib_ty.TDummy)) in
+  (* Printf.eprintf "Find fun : %s : %s\n%!" symb.c (Smtlib_ty.to_string ty); *)
+  let res = compare_fun_def (env,locals) symb ty defs in
+  match res with
+  | Some def -> def
+  | None ->
+    error (Typing_error (Printf.sprintf "Undefined fun definition %s : %s"
+                           symb.c (Smtlib_ty.to_string ty))) symb.p
 
 let check_fun_exists (env,locals) symb params =
   try
@@ -214,16 +215,20 @@ let check_fun_exists (env,locals) symb params =
 
 let mk_fun_ty pars ret assoc =
   let ty = Smtlib_ty.new_type (Smtlib_ty.TFun(pars,ret)) in
-  {params= ty; assoc = assoc}
+    {params= ty; assoc = assoc}
 
-let add_fun_def (env,locals) ?(init=false) name params return assoc =
-  if not init then check_fun_exists (env,locals) name params;
-  let funs =
-    try SMap.find name.c env.funs
-    with Not_found -> []
-  in
-  {env with funs = SMap.add name.c
-                ((mk_fun_ty params return assoc) :: funs) env.funs}
+let mk_fun_ty_arg pars ret assoc args =
+  let ty = Smtlib_ty.new_type (Smtlib_ty.TFun(pars,ret)) in
+  (fun args -> {params= ty; assoc = assoc})
+
+let add_fun_def (env,locals) name params return assoc =
+    check_fun_exists (env,locals) name params;
+    let funs =
+      try SMap.find name.c env.funs
+      with Not_found -> []
+    in
+    {env with funs = SMap.add name.c
+                  ((mk_fun_ty params return assoc) :: funs) env.funs}
 
 let mk_fun_dec (env,locals) (name,pars,return) =
   let pars = List.map (fun par ->
@@ -242,10 +247,24 @@ let mk_fun_def (env,locals) (name,params,return) =
   let return = find_sort (env,locals) return in
   add_fun_def (env,locals) name params return
 
-let add_funs env funs c =
-  List.fold_left (fun env (name,params,return,assoc) ->
-      add_fun_def (env,SMap.empty) ~init:true
-        {c with c=name} params return assoc
+let add_funs env funs =
+  List.fold_left (fun env (name,fun_def) ->
+      let funs =
+        try SMap.find name env.funs
+        with Not_found -> []
+      in
+      {env with funs = SMap.add name
+                    (fun_def :: funs) env.funs}
+    ) env funs
+
+let add_par_funs env funs =
+  List.fold_left (fun env (name,fun_def) ->
+      let funs =
+        try SMap.find name env.par_funs
+        with Not_found -> []
+      in
+      {env with par_funs = SMap.add name
+                    (fun_def :: funs) env.par_funs}
     ) env funs
 
 let find_simpl_sort_symb (env,locals) symb params =

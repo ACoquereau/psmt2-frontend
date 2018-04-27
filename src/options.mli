@@ -14,6 +14,7 @@ val set_assert_mode : bool -> unit
 val set_logic : bool -> unit
 val set_is_qf : bool -> unit
 val set_is_uf : bool -> unit
+val set_is_fp : bool -> unit
 val set_is_real : bool -> unit
 val set_is_int_real : bool -> unit
 val set_is_dt : bool -> unit
@@ -23,6 +24,7 @@ val set_is_non_linear : bool -> unit
 val get_logic : unit -> bool
 val get_is_qf : unit -> bool
 val get_is_uf : unit -> bool
+val get_is_fp : unit -> bool
 val get_is_real : unit -> bool
 val get_is_int_real : unit -> bool
 val get_is_dt : unit -> bool

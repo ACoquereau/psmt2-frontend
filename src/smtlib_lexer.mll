@@ -113,8 +113,8 @@ rule token = parse
 | "reset" { RESET }
 | "reset-assertions" { RESETASSERTIONS }
 | "exit" { EXIT }
-|  '#' 'x' ['0'-'9' 'A'-'F' 'a'-'f']+  as str { HEXADECIMAL(str) }
-|  '#' 'b' ['0'-'1']+  as str { BINARY(str) }
+|  '#' ('x' ['0'-'9' 'A'-'F' 'a'-'f']+  as str) { HEXADECIMAL("0" ^ str) }
+|  '#' ('b' ['0'-'1']+  as str) { BINARY("0" ^ str) }
 |  '|' (['!'-'~' '\128'-'\255' ' ' '\n' '\t' '\r'] # ['|'])* '|'
     as str { ASCIIWOR(str) }
 |  ':' ['a'-'z' 'A'-'Z' '0'-'9' '+' '-' '/' '*' '=' '%' '?' '!' '.' '$'

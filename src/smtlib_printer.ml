@@ -1,4 +1,5 @@
 open Smtlib_syntax
+open Smtlib_typed_env
 open Smtlib_ty
 open Printf
 
@@ -204,3 +205,40 @@ let print_command c =
 
 let print commands =
   List.iter print_command commands
+
+
+
+
+(****************** Env printer **********************)
+(******************************************************************************)
+(*********************************** Printer **********************************)
+let print_sort s (arit_s, arit_t) =
+  Printf.printf "%s : %d / %d \n%!" s arit_s arit_t
+
+let print_fun s fun_def =
+  Printf.printf "%s : %s \n%!" s (Smtlib_ty.to_string fun_def.params)
+
+let print_par_fun s fun_def =
+  Printf.printf "%s : par fun  \n%!" s
+
+let print_env env =
+  Printf.printf ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;\n%!";
+  Printf.printf ";;;;;;;;;;;;;;;;;;;;;;; Sorts;;; ;;;;;;;;;;;;;;;;;\n%!";
+  SMap.iter (fun s (arit, _) ->
+      print_sort s arit
+    ) env.sorts;
+  Printf.printf ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;\n%!";
+  Printf.printf ";;;;;;;;;;;;;;;;;;;;;;; Funs ;;;;;;;;;;;;;;;;;;;;;\n%!";
+
+  SMap.iter (fun s fun_defs ->
+      List.iter (fun fun_def ->
+          print_fun s fun_def
+        ) fun_defs
+    ) env.funs;
+  Printf.printf ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;\n%!";
+  Printf.printf ";;;;;;;;;;;;;;;;;;;;;;; Par funs ;;;;;;;;;;;;;;;;;\n%!";
+  SMap.iter (fun s fun_defs ->
+      List.iter (fun fun_def ->
+          print_par_fun s fun_def
+        ) fun_defs
+    ) env.par_funs
