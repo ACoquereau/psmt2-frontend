@@ -13,11 +13,12 @@
 # (enclosed in the file LGPL).
 
 # where to install the binaries
-DESTDIR?=@prefix@
-# prefix=@prefix@
+# DESTDIR?=@prefix@
+prefix=@prefix@
+libdir=@libdir@
 # exec_prefix=@exec_prefix@
 # BINDIR=$(DESTDIR)@bindir@
-LIBDIR?=$(DESTDIR)/lib/
+LIBDIR=$(prefix)$(libdir)
 # DATADIR=$(DESTDIR)@datadir@/psmt2-frontend
 
 # where to install the man page
@@ -118,12 +119,14 @@ META: config.status
 ##############
 
 install: all META
-	OCAMLFIND_DESTDIR=$(LIBDIR) \
+	mkdir -p $(DESTDIR)$(LIBDIR)
+	OCAMLFIND_DESTDIR=$(DESTDIR)$(LIBDIR) \
 	  ocamlfind install psmt2-frontend src/$(LIBNAME).* src/*.mli META
 
 
 uninstall:
-	ocamlfind remove psmt2-frontend
+	OCAMLFIND_DESTDIR=$(DESTDIR)$(LIBDIR) \
+	  ocamlfind remove psmt2-frontend
 
 # generic rules
 ###############
