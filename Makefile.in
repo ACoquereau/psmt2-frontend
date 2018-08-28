@@ -13,7 +13,7 @@
 # (enclosed in the file LGPL).
 
 # where to install the binaries
-DESTDIR=@prefix@
+DESTDIR?=@prefix@
 # prefix=@prefix@
 # exec_prefix=@exec_prefix@
 # BINDIR=$(DESTDIR)@bindir@
