@@ -90,7 +90,7 @@ and type_key_term (env,locals,dums) key_term =
       ) [] term_list
   | Named(symb) ->
     if Options.verbose () > 0 then
-      Printf.eprintf "[Warning] (! :named not yet supported)\n%!";
+      Printf.eprintf ";[Warning] (! :named not yet supported)\n%!";
     dums
 
 and type_term (env,locals,dums) t =

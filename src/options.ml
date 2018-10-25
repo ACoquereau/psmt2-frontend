@@ -45,4 +45,4 @@ let get_is_non_linear () = !is_non_linear
 let check_command c =
   if assert_mode () then assert false;
   if not (quiet ()) then
-    Printf.eprintf "[Warning] (%s not yet supported)\n%!" c
+    Printf.eprintf ";[Warning] (%s not yet supported)\n%!" c
