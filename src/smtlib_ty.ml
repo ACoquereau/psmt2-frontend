@@ -79,6 +79,11 @@ let is_bool ty =
 let is_dummy ty =
   (shorten ty).desc == TDummy
 
+let get_dt_name ty =
+  match (shorten ty).desc with
+  | TDatatype(s,_) -> s
+  | _ -> assert false
+
 let rec inst links m t =
   try m, IMap.find t.id m
   with Not_found ->
@@ -206,15 +211,18 @@ let rec unify t1 t2 pos =
         end
       | TDatatype(s1,tl1), TDatatype(s2,tl2) ->
         if s1 <> s2 then
-          if s1 <> "" && s2 <> "" then
-            (error (Type_clash_error( to_string t1, to_string t2)) pos)
+          if s1 = "" then
+            t1.desc <- (TLink(shorten t2))
+          else if  s2 = "" then
+            t2.desc <- (TLink(shorten t1))
           else
-            ();
-        begin
-          try List.iter2 (fun l l' -> unify l l' pos) tl1 tl2
-          with Invalid_argument _ ->
             (error (Type_clash_error( to_string t1, to_string t2)) pos)
-        end
+        else
+          begin
+            try List.iter2 (fun l l' -> unify l l' pos) tl1 tl2
+            with Invalid_argument _ ->
+              (error (Type_clash_error( to_string t1, to_string t2)) pos)
+          end
       | TFun(pars1,ret1), TFun(pars2,ret2) ->
         begin
           try List.iter2 (fun l l' -> unify l l' pos) pars1 pars2;
