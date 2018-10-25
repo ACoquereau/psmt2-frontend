@@ -14,9 +14,24 @@ let find_par_ty (env,locals) symb pars args =
     symb.is_quantif <- true;
     res
   with Not_found -> try
-      find_fun (env,locals) symb pars args
+      find_fun (env,locals) symb pars args false
     with Not_found ->
-      error (Typing_error ("Undefined fun : " ^ symb.c)) symb.p
+      let s_symb =
+        (List.fold_left (fun acc arg ->
+             Printf.sprintf "%s %s" acc arg
+           ) symb.c args) in
+      try
+        find_fun (env,locals) {symb with c = s_symb} pars [] false
+      with Not_found ->
+        error (Typing_error ("Undefined fun : " ^ symb.c)) symb.p
+
+let find_pattern (env,locals) symb pars args all_type =
+  try SMap.find symb.c locals, locals
+  with Not_found -> try
+    find_fun (env,locals) symb pars args all_type, locals
+    with Not_found ->
+      let dum = Smtlib_ty.new_type (Smtlib_ty.TDummy) in
+      dum, SMap.add symb.c dum locals
 
 let check_if_dummy t l =
   if Smtlib_ty.is_dummy t.ty then
@@ -65,21 +80,40 @@ let type_qualidentifier (env,locals) q pars =
     Smtlib_ty.unify q.ty ty q.p;
     ty
 
-let type_pattern (env,locals) ty (symb, pars) =
-  let locals,pars = List.fold_left (fun (locals,pars) par ->
-      let ty = (Smtlib_ty.new_type (Smtlib_ty.TVar(par.c))) in
-      SMap.add par.c ty locals, ty :: pars
-    ) (locals,[]) (List.rev pars) in
-  let ty = Smtlib_ty.new_type (Smtlib_ty.TFun (pars,ty)) in
-  let cst_def = find_constr env symb in
-  inst_and_unify (env,locals) Smtlib_ty.IMap.empty ty cst_def symb.p;
-  locals
-
-let rec type_match_case (env,locals,dums) ty (pattern,term) =
-  let pars = type_pattern (env,locals) ty pattern in
-  (* shadowing *)
-  let locals = SMap.union (fun k v1 v2 -> Some v2) locals pars in
-  type_term (env,locals,dums) term
+let rec type_match_case (env,locals,dums,constrs) ty_match (pattern,term) cstrs=
+  match pattern.c with
+  | MatchUnderscore ->
+    let ty,dums = type_term (env,locals,dums) term in
+    ty, dums, SMap.empty
+  | MatchPattern (constr,args) ->
+    match args with
+    | [] ->
+      if SMap.mem constr.c cstrs then
+        let ty,dums = type_term (env,locals,dums) term in
+        ty, dums, SMap.remove constr.c constrs
+      else
+        let ty, locals = find_pattern (env,locals) constr [] [] false in
+        if Smtlib_ty.is_dummy ty then
+          let ty,dums = type_term (env,locals,dums) term in
+          ty, dums, SMap.empty
+        else begin
+          inst_and_unify (env,locals) Smtlib_ty.IMap.empty ty_match ty constr.p;
+          assert false;
+          (* ty, dums, SMap.empty *)
+        end
+    | _ ->
+        let locals,args = List.fold_left (fun (locals,pars) par ->
+            let ty = (Smtlib_ty.new_type (Smtlib_ty.TDummy)) in
+            SMap.add par.c ty locals, ty :: pars
+          ) (locals,[]) (List.rev args) in
+        let ty_constr,locals = find_pattern (env,locals) constr args [] true in
+        if Smtlib_ty.is_dummy ty_constr then
+          error (Typing_error
+                   (Printf.sprintf "Undefined Constructor %s" constr.c)) term.p;
+        let ty = Smtlib_ty.new_type (Smtlib_ty.TFun (args,ty_match)) in
+        inst_and_unify (env,locals) Smtlib_ty.IMap.empty ty_constr ty constr.p;
+        let ty,dums = type_term (env,locals,dums) term in
+        ty, dums, SMap.remove constr.c constrs
 
 and type_key_term (env,locals,dums) key_term =
   match key_term.c with
@@ -151,11 +185,22 @@ and type_term (env,locals,dums) t =
     let ty,dums = type_term (env,locals,dums) term in
     (* check if term is datatype *)
     Smtlib_ty.unify (Smtlib_ty.new_type (Smtlib_ty.TDatatype("",[]))) ty term.p;
-    let res,dums = List.fold_left (fun (res,dums) mc ->
-        let ty_mc, dums = type_match_case (env,locals,dums) ty mc in
+    let dt_name = Smtlib_ty.get_dt_name ty in
+    let constrs = try SMap.find dt_name env.constructors
+      with _ ->
+        error
+          (Typing_error
+             (Printf.sprintf "No constructors found for datatype %s\n%!"
+                dt_name)) term.p in
+    let cstrs = constrs in
+    let res,dums,constrs = List.fold_left (fun (res,dums,constrs) mc ->
+        let ty_mc, dums, constrs =
+          type_match_case (env,locals,dums,constrs) ty mc cstrs in
         Smtlib_ty.unify res ty_mc term.p;
-        res,dums
-      ) ((Smtlib_ty.new_type (Smtlib_ty.TVar "A")),dums) match_case_list in
+        res,dums,constrs
+      ) (Smtlib_ty.new_type (Smtlib_ty.TDummy),dums,constrs) match_case_list in
+    if not (SMap.is_empty constrs) then
+      error (Typing_error "non-exhaustive pattern matching") term.p;
     res,dums
 
 let get_term (env,locals) pars term =

@@ -26,12 +26,14 @@ type env = {
             (Smtlib_ty.ty list * int list) -> Smtlib_ty.desc)) SMap.t;
   funs : fun_def list SMap.t;
   par_funs : (string list -> fun_def) list SMap.t;
+  constructors : int SMap.t SMap.t;
 }
 
 let empty () = {
   sorts = SMap.empty;
   funs = SMap.empty;
   par_funs = SMap.empty;
+  constructors = SMap.empty;
 }
 
 open Smtlib_syntax
@@ -165,7 +167,7 @@ let rec compare_fun_assoc (env,locals) symb ty f assoc =
   Smtlib_ty.unify ty def symb.p;
   Some (Smtlib_ty.fun_ret ty)
 
-and compare_fun_def (env,locals) symb ty funs =
+and compare_fun_def (env,locals) symb ty funs all_type =
   let rec aux funs =
     match funs with
     | [] -> None
@@ -176,14 +178,17 @@ and compare_fun_def (env,locals) symb ty funs =
           let def = def.params in
           let _,def = Smtlib_ty.inst locals Smtlib_ty.IMap.empty def in
           Smtlib_ty.unify ty def symb.p;
-          Some (Smtlib_ty.fun_ret ty)
+          if all_type then
+            Some ty
+          else
+            Some (Smtlib_ty.fun_ret ty)
         | Some a -> compare_fun_assoc (env,locals) symb ty def.params a
       with
       | _ -> aux funs
   in
   aux funs
 
-let find_fun (env,locals) symb params args=
+let find_fun (env,locals) symb params args all_type=
   let defs =
     if args == [] then
       SMap.find symb.c env.funs
@@ -193,19 +198,19 @@ let find_fun (env,locals) symb params args=
   let ty = Smtlib_ty.new_type
       (Smtlib_ty.TFun (params,Smtlib_ty.new_type Smtlib_ty.TDummy)) in
   (* Printf.eprintf "Find fun : %s : %s\n%!" symb.c (Smtlib_ty.to_string ty); *)
-  let res = compare_fun_def (env,locals) symb ty defs in
+  let res = compare_fun_def (env,locals) symb ty defs all_type in
   match res with
   | Some def -> def
   | None ->
     error (Typing_error (Printf.sprintf "Undefined fun definition %s : %s"
                            symb.c (Smtlib_ty.to_string ty))) symb.p
 
-let check_fun_exists (env,locals) symb params =
+let check_fun_exists (env,locals) symb params all_type =
   try
     let ty = Smtlib_ty.new_type
         (Smtlib_ty.TFun (params,Smtlib_ty.new_type Smtlib_ty.TDummy)) in
     let defs = SMap.find symb.c env.funs in
-    let res = compare_fun_def (env,locals) symb ty defs in
+    let res = compare_fun_def (env,locals) symb ty defs all_type in
     match res with
     | Some _ ->
       error (Fun_declaration_error
@@ -222,7 +227,7 @@ let mk_fun_ty_arg pars ret assoc args =
   (fun args -> {params= ty; assoc = assoc})
 
 let add_fun_def (env,locals) name params return assoc =
-    check_fun_exists (env,locals) name params;
+    check_fun_exists (env,locals) name params false;
     let funs =
       try SMap.find name.c env.funs
       with Not_found -> []
@@ -336,6 +341,7 @@ let find_constr env symb =
     error (Typing_error ("Undefined Constructor : " ^ symb.c)) symb.p
 
 let mk_constr_decs (env,locals) dt dt_sort constr_decs =
+  let cstrs = ref [] in
   let env = List.fold_left (fun env (symb_cstr,selector_dec_list) ->
       let env,destr_list =
         (* Add all destructors *)
@@ -349,15 +355,23 @@ let mk_constr_decs (env,locals) dt dt_sort constr_decs =
       let env =
         add_fun_def (env,locals) symb_cstr (List.rev destr_list) dt_sort None in
 
+      cstrs := (symb_cstr.c, List.length destr_list) :: !cstrs;
+
       (* tester of constructor *)
       let is_cstr = { symb_cstr with c = Printf.sprintf "is %s" symb_cstr.c } in
       let env = add_fun_def (env,locals) is_cstr
-          [(Smtlib_ty.new_type (Smtlib_ty.TDatatype("",[])))]
+          (* [(Smtlib_ty.new_type (Smtlib_ty.TDatatype("",[])))] *)
+          [dt_sort]
           (Smtlib_ty.new_type Smtlib_ty.TBool) None in
       env
     ) env constr_decs
   in
-  env
+  let cstrs = List.fold_left (fun acc (cst,arrit) ->
+      SMap.add cst arrit acc) SMap.empty !cstrs in
+  if not (SMap.is_empty cstrs) then
+    {env with constructors = SMap.add dt.c cstrs env.constructors}
+  else
+    env
 
 let mk_dt_dec (env,locals) dt (pars,cst_dec_list) =
   let dt_pars =
