@@ -27,7 +27,7 @@ to compile and install `psmt2-frontend` on your system.
 You can uninstall the library with `make uninstall`.
 
 
-## Miniaml Examples
+## Minimal Examples
 
  See the file `tests/example.ml` for a small example of the usage of the library.
 
