@@ -128,9 +128,9 @@ rule token = parse
 			    '?' '!' '.' '$' '_' '~' '&' '^' '<' '>' '@']*
     as str { SYMBOL(str) }
 | '"' { comment "" lexbuf }
-|  ( '0' | ['1'-'9'] ['0'-'9']* ) '.' ['0'-'9']+
+|  '0'* ( '0' | ['1'-'9'] ['0'-'9']* ) '.' ['0'-'9']+
 		as str { DECIMAL(str) }
-|  ( '0' | ['1'-'9'] ['0'-'9']* )
+|  '0'* ( '0' | ['1'-'9'] ['0'-'9']* )
 	    as str { NUMERAL(str) }
 | eof { EOF }
 | _ {error (Lexical_error ("empty token " ^ lexeme lexbuf))
