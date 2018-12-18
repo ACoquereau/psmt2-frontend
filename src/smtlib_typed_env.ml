@@ -274,9 +274,8 @@ let add_par_funs env funs =
 
 let find_simpl_sort_symb (env,locals) symb params =
   let (ar_s,ar_t),fun_sort = find_sort_def env symb in
-  assert (ar_s = (SMap.cardinal params));
-  Smtlib_ty.new_type (fun_sort symb.c
-                        ((SMap.fold (fun s t l -> t :: l ) params []),[]))
+  assert (ar_s = (List.length params));
+  Smtlib_ty.new_type (fun_sort symb.c (params,[]))
 
 (******************************************************************************)
 (*********************************** Datatypes ********************************)
@@ -374,14 +373,18 @@ let mk_constr_decs (env,locals) dt dt_sort constr_decs =
     env
 
 let mk_dt_dec (env,locals) dt (pars,cst_dec_list) =
+  let locals = ref locals in
   let dt_pars =
-    List.fold_left (fun pars s ->
-        let a = Smtlib_ty.new_type (Smtlib_ty.TVar s.c) in
-        SMap.add s.c a pars
-      ) SMap.empty pars in
-  let locals = SMap.union (fun k v1 v2 -> Some v2) locals dt_pars in
+    List.map (fun s ->
+        let ty = Smtlib_ty.new_type (Smtlib_ty.TVar s.c) in
+        locals := SMap.add s.c ty !locals;
+        ty
+        ) pars
+  in
   let dt_sort = find_simpl_sort_symb (env,locals) dt dt_pars in
-  mk_constr_decs (env,locals) dt dt_sort cst_dec_list
+  mk_constr_decs (env,!locals) dt dt_sort cst_dec_list
+
+
 
 let mk_datatype (env,locals) dt pars dt_dec =
   let arit = List.length pars in
