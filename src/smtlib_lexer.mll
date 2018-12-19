@@ -122,7 +122,7 @@ rule token = parse
 	as str { try Hashtbl.find keyword str
 	  with Not_found ->
 	    error (Lexical_error ("unknown Keyword : " ^ lexeme lexbuf))
-	      (current_pos lexbuf) }
+	      (Some (current_pos lexbuf)) }
 |  ['a'-'z' 'A'-'Z' '+' '-' '/' '*' '=''%' '?' '!' '.' '$' '_' '~' '&'
        '^' '<' '>' '@'] ['a'-'z' 'A'-'Z' '0'-'9' '+' '-' '/' '*' '=''%'
 			    '?' '!' '.' '$' '_' '~' '&' '^' '<' '>' '@']*
@@ -134,7 +134,7 @@ rule token = parse
 	    as str { NUMERAL(str) }
 | eof { EOF }
 | _ {error (Lexical_error ("empty token " ^ lexeme lexbuf))
-	      (current_pos lexbuf) }
+	      (Some (current_pos lexbuf)) }
 
 and comment acc = parse
 | "\"\"" { comment (Printf.sprintf "%s\"" acc) lexbuf }

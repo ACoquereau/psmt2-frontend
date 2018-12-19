@@ -23,7 +23,7 @@ type error =
 | No_match_error of string
 | Type_clash_error of string * string
 
-exception Error of error * (Lexing.position * Lexing.position)
+exception Error of error * ((Lexing.position * Lexing.position) option)
 
 let report_loc fmt file (b,e) =
   if b = dummy_pos || e = dummy_pos then

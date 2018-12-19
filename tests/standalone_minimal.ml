@@ -72,6 +72,11 @@ let () =
       Smtlib_error.print fmt file (Syntax_error (Lexing.lexeme lexbuf)) loc;
       exit 1
     |Smtlib_error.Error (e,p) ->
+      let p =
+        match p with
+        | None -> Lexing.dummy_pos,Lexing.dummy_pos
+        | Some p -> p
+      in
       Smtlib_error.print fmt file e p;
       exit 1
   with
