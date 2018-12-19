@@ -245,12 +245,6 @@ let mk_fun_dec (env,locals) (name,pars,return) =
   Smtlib_ty.unify return.ty s_return return.p;
   add_fun_def (env,locals) name pars s_return
 
-let mk_fun_def (env,locals) (name,params,return) =
-  let params = List.map (fun par ->
-      let _,sort = par.c in
-      find_sort (env,locals) sort) params in
-  let return = find_sort (env,locals) return in
-  add_fun_def (env,locals) name params return
 
 let add_funs env funs =
   List.fold_left (fun env (name,fun_def) ->

@@ -201,6 +201,7 @@ and type_term (env,locals,dums) t =
       ) (Smtlib_ty.new_type (Smtlib_ty.TDummy),dums,constrs) match_case_list in
     if not (SMap.is_empty constrs) then
       error (Typing_error "non-exhaustive pattern matching") term.p;
+    Smtlib_ty.unify res t.ty term.p;
     res,dums
 
 let get_term (env,locals) pars term =
