@@ -2,16 +2,19 @@ let assert_mode = ref false
 let quiet = ref false
 let verbose = ref 0
 let status = ref "undef"
+let keep_loc = ref false
 
 let set_assert_mode b = assert_mode := b
 let set_verbose n = verbose := n
 let set_quiet b = quiet := b
 let set_status s = status := s
+let set_keep_loc b = keep_loc := b
 
 let assert_mode () = !assert_mode
 let status () = !status
 let quiet () = !quiet
 let verbose () = !verbose
+let keep_loc () = !keep_loc
 
 let logic = ref false
 let is_qf = ref false

@@ -25,6 +25,7 @@ let fmt = err_formatter
 let verbose = ref 0
 let parse_only = ref false
 let quiet = ref false
+let keep_loc = ref false
 
 let smt2 = ".smt2"
 let psmt2 = ".psmt2"
@@ -35,7 +36,8 @@ let spec =
   [
    "-parse-only", Arg.Set parse_only, "  stops after parsing";
    "-quiet", Arg.Set quiet, "  don't print warning";
-   "-verbose", Arg.Set_int verbose, "  1 : print typed ast, 2 : print typing env"
+   "-verbose", Arg.Set_int verbose, "  1 : print typed ast, 2 : print typing env";
+   "-keep_loc", Arg.Set keep_loc, "keep location in AST"
   ]
 
 let file =
@@ -49,6 +51,8 @@ let file =
   Arg.parse spec set_file usage;
   Options.set_quiet !quiet;
   Options.set_verbose !verbose;
+  Options.set_keep_loc !keep_loc;
+
   match !file with Some f -> f | None -> Arg.usage spec usage; exit 1
 
 let () =

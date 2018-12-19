@@ -10,6 +10,8 @@ val set_quiet : bool -> unit
 val assert_mode : unit -> bool
 val set_assert_mode : bool -> unit
 
+val keep_loc : unit -> bool
+val set_keep_loc : bool -> unit
 
 val set_logic : bool -> unit
 val set_is_qf : bool -> unit
