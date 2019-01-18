@@ -5,7 +5,7 @@
 (******************************************************************************)
 
 type 'a data =
-  { p : (Lexing.position * Lexing.position) ; c : 'a ;
+  { p : (Lexing.position * Lexing.position) option ; c : 'a ;
     ty : Smtlib_ty.ty; mutable is_quantif : bool}
 
 type constant =

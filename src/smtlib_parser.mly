@@ -7,6 +7,10 @@
    open Smtlib_syntax
 
    let mk_data p c =
+     let p =
+       if Options.keep_loc () then Some p
+       else None
+     in
        {p;c;ty= Smtlib_ty.new_type Smtlib_ty.TDummy;is_quantif=false}
 %}
 
