@@ -3,6 +3,11 @@
 A library to parse and type-check a conservative extension of the SMT-LIB 2
 standard with prenex polymorphism.
 
+## Dependencies
+
+`psmt2-frontend` requieres `4.0.4.0` or higher `menhir` and `ocamlfind`
+You can use `make opam-deps` to install dependencies in the current switch
+
 ## Build and Install Instructions
 
 The easiest way to install psmt2-frontend is to use OPAM:
@@ -17,8 +22,21 @@ instructions:
     $ make opam-deps (if you are using OPAM and some deps are missing)
     $ make
 
-to compile and install `psmt2-frontend` on your system. You can
-uninstall the library with `make uninstall`.
+to compile and install `psmt2-frontend` on your system.
+
+You can uninstall the library with `make uninstall`.
+
+
+## Minimal Examples
+
+ See the file `tests/example.ml` for a small example of the usage of the library.
+
+
+## Contributing
+
+Don't hesitate to report encountered bugs on this Git repo's issues
+tracker.
+
 
 ## TODO
 

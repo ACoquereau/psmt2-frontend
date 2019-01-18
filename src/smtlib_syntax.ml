@@ -5,7 +5,7 @@
 (******************************************************************************)
 
 type 'a data =
-  { p : (Lexing.position * Lexing.position) ; c : 'a ;
+  { p : (Lexing.position * Lexing.position) option ; c : 'a ;
     ty : Smtlib_ty.ty; mutable is_quantif : bool}
 
 type constant =
@@ -132,6 +132,12 @@ and qualidentifier = qualidentifier_aux data
 (* valued variable *)
 and varbinding = symbol * term
 
+(* pattern *)
+and pattern_aux =
+| MatchPattern of (symbol * symbol list)
+| MatchUnderscore
+and pattern = pattern_aux data
+
 (* terms *)
 and term_aux =
 | TermSpecConst of constant
@@ -141,7 +147,7 @@ and term_aux =
 | TermForAllTerm of sorted_var list * term
 | TermExistsTerm of sorted_var list * term
 | TermExclimationPt of term * key_term list
-| TermMatch of term * ((symbol * symbol list) * term) list
+| TermMatch of term * (pattern * term) list
 and term = term_aux data
 
 (* datatypes *)

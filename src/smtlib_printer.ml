@@ -1,4 +1,5 @@
 open Smtlib_syntax
+open Smtlib_typed_env
 open Smtlib_ty
 open Printf
 
@@ -17,7 +18,8 @@ let print_constant cst =
 let print_identifier id =
   match id.c with
   | IdSymbol s -> s.c
-  | IdUnderscoreSymNum _ -> assert false
+  | IdUnderscoreSymNum _ ->
+    Options.check_command "printer for (_ .."; ""
 
 let rec print_sort s =
   match s.c with
@@ -70,7 +72,8 @@ and print_term t =
       sprintf "(exists (%s) %s)"
         (print_sorted_vars sorted_vars) (print_term term)
     | TermExclimationPt (term,key_term_list) -> (print_term term)
-    | TermMatch (term,pattern_term_list) -> assert false
+    | TermMatch (term,pattern_term_list) ->
+      Options.check_command "printer for match terms"; ""
   in
   sprintf "%s:%s " s ((to_string t.ty))
 
@@ -132,9 +135,12 @@ let print_pro_lit p =
   | PropLit(s) -> sprintf "%s" s.c
   | PropLitNot(s) -> sprintf "(not %s)" s.c
 
-let print_option o = assert false
-let print_info key_info = assert false
-let print_attribute a = assert false
+let print_option o =
+  Options.check_command "printer for get/set-option"; ""
+let print_info key_info =
+  Options.check_command "printer for get/set-option"; ""
+let print_attribute a =
+  Options.check_command "printer for get/set-option"; ""
 
 let print_command c =
   match c.c with
@@ -199,3 +205,40 @@ let print_command c =
 
 let print commands =
   List.iter print_command commands
+
+
+
+
+(****************** Env printer **********************)
+(******************************************************************************)
+(*********************************** Printer **********************************)
+let print_sort s (arit_s, arit_t) =
+  Printf.printf "%s : %d / %d \n%!" s arit_s arit_t
+
+let print_fun s fun_def =
+  Printf.printf "%s : %s \n%!" s (Smtlib_ty.to_string fun_def.params)
+
+let print_par_fun s fun_def =
+  Printf.printf "%s : par fun  \n%!" s
+
+let print_env env =
+  Printf.printf ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;\n%!";
+  Printf.printf ";;;;;;;;;;;;;;;;;;;;;;; Sorts;;; ;;;;;;;;;;;;;;;;;\n%!";
+  SMap.iter (fun s (arit, _) ->
+      print_sort s arit
+    ) env.sorts;
+  Printf.printf ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;\n%!";
+  Printf.printf ";;;;;;;;;;;;;;;;;;;;;;; Funs ;;;;;;;;;;;;;;;;;;;;;\n%!";
+
+  SMap.iter (fun s fun_defs ->
+      List.iter (fun fun_def ->
+          print_fun s fun_def
+        ) fun_defs
+    ) env.funs;
+  Printf.printf ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;\n%!";
+  Printf.printf ";;;;;;;;;;;;;;;;;;;;;;; Par funs ;;;;;;;;;;;;;;;;;\n%!";
+  SMap.iter (fun s fun_defs ->
+      List.iter (fun fun_def ->
+          print_par_fun s fun_def
+        ) fun_defs
+    ) env.par_funs

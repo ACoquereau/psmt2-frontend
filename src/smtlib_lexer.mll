@@ -113,8 +113,8 @@ rule token = parse
 | "reset" { RESET }
 | "reset-assertions" { RESETASSERTIONS }
 | "exit" { EXIT }
-|  '#' 'x' ['0'-'9' 'A'-'F' 'a'-'f']+  as str { HEXADECIMAL(str) }
-|  '#' 'b' ['0'-'1']+  as str { BINARY(str) }
+|  '#' ('x' ['0'-'9' 'A'-'F' 'a'-'f']+  as str) { HEXADECIMAL("0" ^ str) }
+|  '#' ('b' ['0'-'1']+  as str) { BINARY("0" ^ str) }
 |  '|' (['!'-'~' '\128'-'\255' ' ' '\n' '\t' '\r'] # ['|'])* '|'
     as str { ASCIIWOR(str) }
 |  ':' ['a'-'z' 'A'-'Z' '0'-'9' '+' '-' '/' '*' '=' '%' '?' '!' '.' '$'
@@ -122,19 +122,19 @@ rule token = parse
 	as str { try Hashtbl.find keyword str
 	  with Not_found ->
 	    error (Lexical_error ("unknown Keyword : " ^ lexeme lexbuf))
-	      (current_pos lexbuf) }
+	      (Some (current_pos lexbuf)) }
 |  ['a'-'z' 'A'-'Z' '+' '-' '/' '*' '=''%' '?' '!' '.' '$' '_' '~' '&'
        '^' '<' '>' '@'] ['a'-'z' 'A'-'Z' '0'-'9' '+' '-' '/' '*' '=''%'
 			    '?' '!' '.' '$' '_' '~' '&' '^' '<' '>' '@']*
     as str { SYMBOL(str) }
 | '"' { comment "" lexbuf }
-|  ( '0' | ['1'-'9'] ['0'-'9']* ) '.' ['0'-'9']+
+|  '0'* ( '0' | ['1'-'9'] ['0'-'9']* ) '.' ['0'-'9']+
 		as str { DECIMAL(str) }
-|  ( '0' | ['1'-'9'] ['0'-'9']* )
+|  '0'* ( '0' | ['1'-'9'] ['0'-'9']* )
 	    as str { NUMERAL(str) }
 | eof { EOF }
 | _ {error (Lexical_error ("empty token " ^ lexeme lexbuf))
-	      (current_pos lexbuf) }
+	      (Some (current_pos lexbuf)) }
 
 and comment acc = parse
 | "\"\"" { comment (Printf.sprintf "%s\"" acc) lexbuf }

@@ -7,36 +7,6 @@
 open Lexing
 open Format
 
-let status = ref "undef"
-let logic = ref false
-let is_qf = ref false
-let is_uf = ref false
-let is_real = ref false
-let is_int_real = ref false
-let is_dt = ref false
-let is_linear = ref false
-let is_non_linear = ref false
-
-
-let set_status s = status := s
-let set_logic t = logic := t
-let set_is_qf t = is_qf := t
-let set_is_uf t = is_uf := t
-let set_is_real t = is_real := t
-let set_is_int_real t = is_int_real := t
-let set_is_dt t = is_dt := t
-let set_is_linear t = is_linear := t
-let set_is_non_linear t = is_non_linear := t
-let get_status () = !status
-let get_logic () = !logic
-let get_is_qf () = !is_qf
-let get_is_uf () = !is_uf
-let get_is_real () = !is_real
-let get_is_int_real () = !is_int_real
-let get_is_dt () = !is_dt
-let get_is_linear () = !is_linear
-let get_is_non_linear () = !is_non_linear
-
 type error =
 | Lexical_error of string
 | Syntax_error of string
@@ -53,7 +23,7 @@ type error =
 | No_match_error of string
 | Type_clash_error of string * string
 
-exception Error of error * (Lexing.position * Lexing.position)
+exception Error of error * ((Lexing.position * Lexing.position) option)
 
 let report_loc fmt file (b,e) =
   if b = dummy_pos || e = dummy_pos then
@@ -89,6 +59,6 @@ let print fmt f e p =
 
 
 let error e p =
-  print err_formatter "" e p;
+  (* print err_formatter "" e p; *)
   raise (Error (e,p))
 

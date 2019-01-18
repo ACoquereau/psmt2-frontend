@@ -7,6 +7,10 @@
    open Smtlib_syntax
 
    let mk_data p c =
+     let p =
+       if Options.keep_loc () then Some p
+       else None
+     in
        {p;c;ty= Smtlib_ty.new_type Smtlib_ty.TDummy;is_quantif=false}
 %}
 
@@ -121,9 +125,10 @@ qualidentifier:
       { mk_data ($startpos,$endpos) (QualIdentifierAs($3, $4)) }
 
 pattern:
-    | symbol { $1,[] }
+    | symbol { mk_data ($startpos,$endpos) (MatchPattern ($1, [])) }
+    | UNDERSCORE { mk_data ($startpos,$endpos) MatchUnderscore }
     | LP symbol nonempty_list(symbol) RP
-       { $2, $3 }
+       { mk_data ($startpos,$endpos) (MatchPattern ($2, $3)) }
 
 match_case:
     | LP pattern term RP { ($2,$3) }
@@ -313,7 +318,7 @@ command:
     | LP SETINFO attribute RP
         {mk_data ($startpos,$endpos) (Cmd_SetInfo $3) }
     | LP SETLOGIC symbol RP
-        {Smtlib_error.set_logic true;
+        {Options.set_logic true;
          mk_data ($startpos,$endpos) (Cmd_SetLogic $3) }
     | LP SETOPTION option RP
         {mk_data ($startpos,$endpos) (Cmd_SetOption $3) }

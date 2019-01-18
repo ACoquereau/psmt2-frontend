@@ -15,6 +15,8 @@ and desc =
   | TString
   | TArray of ty * ty
   | TBitVec of int
+  | TFloatingPoint of int * int
+  | TRoundingMode
   | TSort of string * (ty list)
   | TDatatype of string * (ty list)
   | TVar of string
@@ -36,6 +38,8 @@ let rec to_string t =
   | TString -> "String"
   | TArray(t1,t2) -> Printf.sprintf "Array(%s %s)" (to_string t1) (to_string t2)
   | TBitVec(n) -> Printf.sprintf "BitVec(%d)" n
+  | TFloatingPoint(n1,n2) -> Printf.sprintf "FloatingPoint(%d,%d)" n1 n2
+  | TRoundingMode -> Printf.sprintf "RoundingMode"
   | TSort(s,tl) ->
     if List.length tl = 0 then
       Printf.sprintf "%s(S)" s
@@ -75,6 +79,11 @@ let is_bool ty =
 let is_dummy ty =
   (shorten ty).desc == TDummy
 
+let get_dt_name ty =
+  match (shorten ty).desc with
+  | TDatatype(s,_) -> s
+  | _ -> assert false
+
 let rec inst links m t =
   try m, IMap.find t.id m
   with Not_found ->
@@ -85,6 +94,8 @@ let rec inst links m t =
       let m2, t2' = inst links m1 t2 in
       m2, new_type (TArray(t1', t2'))
     | TBitVec(n) -> m, new_type (TBitVec(n))
+    | TFloatingPoint(n1,n2) -> m, new_type (TFloatingPoint(n1,n2))
+    | TRoundingMode -> m, t
     | TSort (s,tl) ->
       let m,tl = List.fold_left (fun (m,tl) t ->
           let m',t' = inst links m t in
@@ -130,6 +141,8 @@ let rec subst m t =
     let t2' = subst m t2 in
     new_type (TArray(t1', t2'))
   | TBitVec(n) -> t
+  | TFloatingPoint(n1,n2) -> t
+  | TRoundingMode -> t
   | TSort (s,tl) ->
     let tl = List.fold_left (fun tl t ->
           let t' = subst m t in
@@ -155,7 +168,7 @@ let rec subst m t =
 
 let rec unify t1 t2 pos =
   (* Printf.printf "Unification de (%s) et (%s) \n%!"
-     (to_string t1) (to_string t2); *)
+   *    (to_string t1) (to_string t2); *)
   if t1.id <> t2.id then
     begin  match t1.desc, t2.desc with
       | TLink(t), _ -> unify (shorten t) t2 pos
@@ -166,7 +179,8 @@ let rec unify t1 t2 pos =
       | TVar(s1), TVar(s2) ->
         if t1.id <> t2.id then
           (error (Type_clash_error( to_string t1, to_string t2)) pos)
-      | TInt, TInt | TReal, TReal | TBool, TBool | TString, TString -> ()
+      | TInt, TInt | TReal, TReal | TBool, TBool | TString, TString
+      | TRoundingMode, TRoundingMode  -> ()
       | TInt, TReal | TReal, TInt ->
         assert false
         (* if not( get_is_int_real ()) then
@@ -174,8 +188,19 @@ let rec unify t1 t2 pos =
       | TArray(t1a,t1b), TArray(t2a,t2b) ->
         unify t1a t2a pos; unify t1b t2b pos
       | TBitVec(n1), TBitVec(n2) ->
-        if not (n1 = n2) then
+        if n1 = 0 then t1.desc <- (TLink(shorten t2))
+        else if n2 = 0 then t2.desc <- (TLink(shorten t1))
+        else if not (n1 = n2) then
           (error (Type_clash_error( to_string t1, to_string t2)) pos)
+
+      | TFloatingPoint(n1a,n1b), TFloatingPoint(n2a,n2b) ->
+        if n1a = 0 && n1b = 0 then
+          t1.desc <- (TLink(shorten t2))
+        else if n2a = 0 && n2b = 0 then
+          t2.desc <- (TLink(shorten t1))
+        else if not (n1a = n2a && n1b = n2b) then
+          (error (Type_clash_error( to_string t1, to_string t2)) pos);
+
       | TSort(s1,tl1), TSort(s2,tl2) ->
         if s1 <> s2 then
           (error (Type_clash_error( to_string t1, to_string t2)) pos);
@@ -186,15 +211,18 @@ let rec unify t1 t2 pos =
         end
       | TDatatype(s1,tl1), TDatatype(s2,tl2) ->
         if s1 <> s2 then
-          if s1 <> "" && s2 <> "" then
-            (error (Type_clash_error( to_string t1, to_string t2)) pos)
+          if s1 = "" then
+            t1.desc <- (TLink(shorten t2))
+          else if  s2 = "" then
+            t2.desc <- (TLink(shorten t1))
           else
-            ();
-        begin
-          try List.iter2 (fun l l' -> unify l l' pos) tl1 tl2
-          with Invalid_argument _ ->
             (error (Type_clash_error( to_string t1, to_string t2)) pos)
-        end
+        else
+          begin
+            try List.iter2 (fun l l' -> unify l l' pos) tl1 tl2
+            with Invalid_argument _ ->
+              (error (Type_clash_error( to_string t1, to_string t2)) pos)
+          end
       | TFun(pars1,ret1), TFun(pars2,ret2) ->
         begin
           try List.iter2 (fun l l' -> unify l l' pos) pars1 pars2;
