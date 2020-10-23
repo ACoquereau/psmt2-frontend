@@ -28,7 +28,7 @@ let find_par_ty (env,locals) symb pars args =
 let find_pattern (env,locals) symb pars args all_type =
   try SMap.find symb.c locals, locals
   with Not_found -> try
-    find_fun (env,locals) symb pars args all_type, locals
+      find_fun (env,locals) symb pars args all_type, locals
     with Not_found ->
       let dum = Smtlib_ty.new_type (Smtlib_ty.TDummy) in
       dum, SMap.add symb.c dum locals
@@ -102,18 +102,18 @@ let rec type_match_case (env,locals,dums,constrs) ty_match (pattern,term) cstrs=
           (* ty, dums, SMap.empty *)
         end
     | _ ->
-        let locals,args = List.fold_left (fun (locals,pars) par ->
-            let ty = (Smtlib_ty.new_type (Smtlib_ty.TDummy)) in
-            SMap.add par.c ty locals, ty :: pars
-          ) (locals,[]) (List.rev args) in
-        let ty_constr,locals = find_pattern (env,locals) constr args [] true in
-        if Smtlib_ty.is_dummy ty_constr then
-          error (Typing_error
-                   (Printf.sprintf "Undefined Constructor %s" constr.c)) term.p;
-        let ty = Smtlib_ty.new_type (Smtlib_ty.TFun (args,ty_match)) in
-        inst_and_unify (env,locals) Smtlib_ty.IMap.empty ty_constr ty constr.p;
-        let ty,dums = type_term (env,locals,dums) term in
-        ty, dums, SMap.remove constr.c constrs
+      let locals,args = List.fold_left (fun (locals,pars) par ->
+          let ty = (Smtlib_ty.new_type (Smtlib_ty.TDummy)) in
+          SMap.add par.c ty locals, ty :: pars
+        ) (locals,[]) (List.rev args) in
+      let ty_constr,locals = find_pattern (env,locals) constr args [] true in
+      if Smtlib_ty.is_dummy ty_constr then
+        error (Typing_error
+                 (Printf.sprintf "Undefined Constructor %s" constr.c)) term.p;
+      let ty = Smtlib_ty.new_type (Smtlib_ty.TFun (args,ty_match)) in
+      inst_and_unify (env,locals) Smtlib_ty.IMap.empty ty_constr ty constr.p;
+      let ty,dums = type_term (env,locals,dums) term in
+      ty, dums, SMap.remove constr.c constrs
 
 and type_key_term (env,locals,dums) key_term =
   match key_term.c with
@@ -290,9 +290,10 @@ let type_command (env,locals) c =
   | Cmd_SetLogic(symb) -> Smtlib_typed_logic.set_logic env symb
   | Cmd_SetOption (option) -> Options.check_command "set-option"; env
   | Cmd_SetInfo (attribute) -> Options.check_command "set-info"; env
-  | Cmd_Push _ | Cmd_Pop _ ->
-    error (Incremental_error ("incremental command not suported")) c.p
+  | Cmd_Push _n | Cmd_Pop _n ->
+    warning (Options.get_err_fmt ()) (Incremental_error ("incremental command not suported")) c.p; env
   | Cmd_Exit -> env
+
 
 let typing parsed_ast =
   let env =
