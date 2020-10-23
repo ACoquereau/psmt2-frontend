@@ -3,18 +3,24 @@ let quiet = ref false
 let verbose = ref 0
 let status = ref "undef"
 let keep_loc = ref false
+let warning_as_error = ref false
+let filename = ref ""
 
 let set_assert_mode b = assert_mode := b
 let set_verbose n = verbose := n
 let set_quiet b = quiet := b
 let set_status s = status := s
 let set_keep_loc b = keep_loc := b
+let set_warning_as_error b = warning_as_error := b
+let set_filename f = filename := f
 
 let assert_mode () = !assert_mode
 let status () = !status
 let quiet () = !quiet
 let verbose () = !verbose
 let keep_loc () = !keep_loc
+let warning_as_error () = !warning_as_error
+let filename () = !filename
 
 let logic = ref false
 let is_qf = ref false
@@ -44,6 +50,10 @@ let get_is_int_real () = !is_int_real
 let get_is_dt () = !is_dt
 let get_is_linear () = !is_linear
 let get_is_non_linear () = !is_non_linear
+
+let err_fmt = ref Format.err_formatter
+let get_err_fmt () = !err_fmt
+let set_err_fmt f = err_fmt := f
 
 let check_command c =
   if assert_mode () then assert false;

@@ -13,6 +13,12 @@ val set_assert_mode : bool -> unit
 val keep_loc : unit -> bool
 val set_keep_loc : bool -> unit
 
+val warning_as_error : unit -> bool
+val set_warning_as_error : bool -> unit
+
+val filename : unit -> string
+val set_filename : string -> unit
+
 val set_logic : bool -> unit
 val set_is_qf : bool -> unit
 val set_is_uf : bool -> unit
@@ -32,5 +38,8 @@ val get_is_int_real : unit -> bool
 val get_is_dt : unit -> bool
 val get_is_linear : unit -> bool
 val get_is_non_linear : unit -> bool
+
+val set_err_fmt : Format.formatter -> unit
+val get_err_fmt : unit -> Format.formatter
 
 val check_command : string -> unit

@@ -36,6 +36,7 @@ let () =
       ":funs",FUNS;
       ":funs-description",FUNSDESCRIPT;
       ":global-declarations", GLOBALDECLARATIONS;
+      ":incremental", INCREMENTAL;
       ":instance", INSTANCE;
       ":interactive-mode", INTERACTIVE;
       ":language",LANGUAGE;
