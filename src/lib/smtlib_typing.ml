@@ -4,8 +4,8 @@ open Smtlib_syntax
 open Smtlib_typed_env
 
 (******************************************************************************)
-let inst_and_unify (env,locals) m a b pos =
-  let m, a = Smtlib_ty.inst locals m a in
+let inst_and_unify (_env,locals) m a b pos =
+  let _m, a = Smtlib_ty.inst locals m a in
   Smtlib_ty.unify a b pos
 
 let find_par_ty (env,locals) symb pars args =
@@ -28,7 +28,7 @@ let find_par_ty (env,locals) symb pars args =
 let find_pattern (env,locals) symb pars args all_type =
   try SMap.find symb.c locals, locals
   with Not_found -> try
-    find_fun (env,locals) symb pars args all_type, locals
+      find_fun (env,locals) symb pars args all_type, locals
     with Not_found ->
       let dum = Smtlib_ty.new_type (Smtlib_ty.TDummy) in
       dum, SMap.add symb.c dum locals
@@ -46,19 +46,19 @@ let check_if_escaped l =
       end;
     ) l
 
-let type_cst c pos=
+let type_cst c _pos=
   match c with
-  | Const_Dec (s) -> Smtlib_ty.new_type Smtlib_ty.TReal
-  | Const_Num (s) ->
+  | Const_Dec (_s) -> Smtlib_ty.new_type Smtlib_ty.TReal
+  | Const_Num (_s) ->
     Smtlib_ty.new_type
       (if get_is_real () then Smtlib_ty.TReal else Smtlib_ty.TInt)
-  | Const_Str (s) -> Smtlib_ty.new_type Smtlib_ty.TString
-  | Const_Hex (s) ->
+  | Const_Str (_s) -> Smtlib_ty.new_type Smtlib_ty.TString
+  | Const_Hex (_s) ->
     Smtlib_ty.new_type
       (if get_is_fp () then Smtlib_ty.TBitVec(0)
        else if get_is_real () then Smtlib_ty.TReal
        else Smtlib_ty.TInt)
-  | Const_Bin (s) ->
+  | Const_Bin (_s) ->
     Smtlib_ty.new_type
       (if get_is_fp () then Smtlib_ty.TBitVec(0)
        else if get_is_real () then Smtlib_ty.TReal
@@ -102,18 +102,18 @@ let rec type_match_case (env,locals,dums,constrs) ty_match (pattern,term) cstrs=
           (* ty, dums, SMap.empty *)
         end
     | _ ->
-        let locals,args = List.fold_left (fun (locals,pars) par ->
-            let ty = (Smtlib_ty.new_type (Smtlib_ty.TDummy)) in
-            SMap.add par.c ty locals, ty :: pars
-          ) (locals,[]) (List.rev args) in
-        let ty_constr,locals = find_pattern (env,locals) constr args [] true in
-        if Smtlib_ty.is_dummy ty_constr then
-          error (Typing_error
-                   (Printf.sprintf "Undefined Constructor %s" constr.c)) term.p;
-        let ty = Smtlib_ty.new_type (Smtlib_ty.TFun (args,ty_match)) in
-        inst_and_unify (env,locals) Smtlib_ty.IMap.empty ty_constr ty constr.p;
-        let ty,dums = type_term (env,locals,dums) term in
-        ty, dums, SMap.remove constr.c constrs
+      let locals,args = List.fold_left (fun (locals,pars) par ->
+          let ty = (Smtlib_ty.new_type (Smtlib_ty.TDummy)) in
+          SMap.add par.c ty locals, ty :: pars
+        ) (locals,[]) (List.rev args) in
+      let ty_constr,locals = find_pattern (env,locals) constr args [] true in
+      if Smtlib_ty.is_dummy ty_constr then
+        error (Typing_error
+                 (Printf.sprintf "Undefined Constructor %s" constr.c)) term.p;
+      let ty = Smtlib_ty.new_type (Smtlib_ty.TFun (args,ty_match)) in
+      inst_and_unify (env,locals) Smtlib_ty.IMap.empty ty_constr ty constr.p;
+      let ty,dums = type_term (env,locals,dums) term in
+      ty, dums, SMap.remove constr.c constrs
 
 and type_key_term (env,locals,dums) key_term =
   match key_term.c with
@@ -122,7 +122,7 @@ and type_key_term (env,locals,dums) key_term =
         let _,dums = type_term (env,locals,dums) t in
         dums
       ) [] term_list
-  | Named(symb) ->
+  | Named(_symb) ->
     if Options.verbose () > 0 then
       Printf.eprintf ";[Warning] (! :named not yet supported)\n%!";
     dums
@@ -232,7 +232,7 @@ let type_command (env,locals) c =
       (Smtlib_ty.new_type Smtlib_ty.TBool) (get_term (env,locals) pars t) t.p;
     env
   | Cmd_CheckSat -> env
-  | Cmd_CheckSatAssum prop_lit ->
+  | Cmd_CheckSatAssum _prop_lit ->
     Options.check_command "check-sat-assuming";
     env
   | Cmd_DeclareConst (symbol,(pars,sort)) ->
@@ -275,21 +275,21 @@ let type_command (env,locals) c =
     env
   | Cmd_DefineSort (symbol, symbol_list, sort) ->
     Smtlib_typed_env.mk_sort_def (env,locals) symbol symbol_list sort
-  | Cmd_Echo (attribute_value) -> Options.check_command "echo"; env
+  | Cmd_Echo (_attribute_value) -> Options.check_command "echo"; env
   | Cmd_GetAssert -> Options.check_command "get-assertions"; env
   | Cmd_GetProof -> Options.check_command "get-proof"; env
   | Cmd_GetUnsatCore -> Options.check_command "get-unsat-core"; env
-  | Cmd_GetValue (term_list) -> Options.check_command "get-value"; env
+  | Cmd_GetValue (_term_list) -> Options.check_command "get-value"; env
   | Cmd_GetAssign -> Options.check_command "get-assignement"; env
-  | Cmd_GetOption (keyword) -> Options.check_command "get-option"; env
-  | Cmd_GetInfo (key_info) -> Options.check_command "get-info"; env
+  | Cmd_GetOption (_keyword) -> Options.check_command "get-option"; env
+  | Cmd_GetInfo (_key_info) -> Options.check_command "get-info"; env
   | Cmd_GetModel -> Options.check_command "get-model"; env
   | Cmd_GetUnsatAssumptions -> Options.check_command "get-unsat-core"; env
   | Cmd_Reset -> Options.check_command "reset"; env
   | Cmd_ResetAssert -> Options.check_command "reset-assertions"; env
   | Cmd_SetLogic(symb) -> Smtlib_typed_logic.set_logic env symb
-  | Cmd_SetOption (option) -> Options.check_command "set-option"; env
-  | Cmd_SetInfo (attribute) -> Options.check_command "set-info"; env
+  | Cmd_SetOption (_option) -> Options.check_command "set-option"; env
+  | Cmd_SetInfo (_attribute) -> Options.check_command "set-info"; env
   | Cmd_Push _ | Cmd_Pop _ ->
     error (Incremental_error ("incremental command not suported")) c.p
   | Cmd_Exit -> env

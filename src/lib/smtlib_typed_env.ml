@@ -58,8 +58,8 @@ let get_identifier id =
 
 let check_identifier id arit =
   match id.c with
-  | IdSymbol(symb) -> assert (arit = 0);
-  | IdUnderscoreSymNum(symb,index_list) ->
+  | IdSymbol(_symb) -> assert (arit = 0);
+  | IdUnderscoreSymNum(_symb,index_list) ->
     assert (List.length index_list = arit)
 
 (******************************************************************************)
@@ -153,10 +153,10 @@ let extract_arit_ty_assoc ty =
     (try List.hd params with _ -> Smtlib_ty.new_type (Smtlib_ty.TDummy))
   | _ -> assert false
 
-let rec compare_fun_assoc (env,locals) symb ty f assoc =
+let rec compare_fun_assoc (_env,locals) symb ty _f assoc =
   let arit,t_fun = extract_arit_ty_assoc ty in
   let _,t_fun = Smtlib_ty.inst locals Smtlib_ty.IMap.empty t_fun in
-  let params = init arit (fun i -> t_fun) in
+  let params = init arit (fun _i -> t_fun) in
   let ret =
     match assoc with
     | Right | Left -> t_fun
@@ -220,20 +220,20 @@ let check_fun_exists (env,locals) symb params all_type =
 
 let mk_fun_ty pars ret assoc =
   let ty = Smtlib_ty.new_type (Smtlib_ty.TFun(pars,ret)) in
-    {params= ty; assoc = assoc}
+  {params= ty; assoc = assoc}
 
-let mk_fun_ty_arg pars ret assoc args =
+let mk_fun_ty_arg pars ret assoc _args =
   let ty = Smtlib_ty.new_type (Smtlib_ty.TFun(pars,ret)) in
-  (fun args -> {params= ty; assoc = assoc})
+  (fun _args -> {params= ty; assoc = assoc})
 
 let add_fun_def (env,locals) name params return assoc =
-    check_fun_exists (env,locals) name params false;
-    let funs =
-      try SMap.find name.c env.funs
-      with Not_found -> []
-    in
-    {env with funs = SMap.add name.c
-                  ((mk_fun_ty params return assoc) :: funs) env.funs}
+  check_fun_exists (env,locals) name params false;
+  let funs =
+    try SMap.find name.c env.funs
+    with Not_found -> []
+  in
+  {env with funs = SMap.add name.c
+                ((mk_fun_ty params return assoc) :: funs) env.funs}
 
 let mk_fun_dec (env,locals) (name,pars,return) =
   let pars = List.map (fun par ->
@@ -266,8 +266,8 @@ let add_par_funs env funs =
                     (fun_def :: funs) env.par_funs}
     ) env funs
 
-let find_simpl_sort_symb (env,locals) symb params =
-  let (ar_s,ar_t),fun_sort = find_sort_def env symb in
+let find_simpl_sort_symb (env,_locals) symb params =
+  let (ar_s,_ar_t),fun_sort = find_sort_def env symb in
   assert (ar_s = (List.length params));
   Smtlib_ty.new_type (fun_sort symb.c (params,[]))
 
@@ -282,7 +282,7 @@ let extract_pars locals pars =
       Smtlib_ty.unify par.ty ty par.p;
       SMap.add symb ty pars
     ) SMap.empty pars; in
-  SMap.union (fun k v1 v2 -> Some v2) locals pars
+  SMap.union (fun _k _v1 v2 -> Some v2) locals pars
 
 let mk_const (env,locals) (name,pars,sort) =
   let locals = extract_pars locals pars in
@@ -306,7 +306,7 @@ let mk_sort_def (env,locals) symb pars sort =
   let pars = List.map (fun par -> SMap.find par.c locals) pars in
   let sort =  find_sort (env,locals) sort in
   let arit = List.length pars in
-  let sort_def = (arit,0), (fun s (l,_) ->
+  let sort_def = (arit,0), (fun _s (l,_) ->
       assert (List.length l = arit);
       let links = List.fold_left2 (fun links t1 t2 ->
           let links, t2 = Smtlib_ty.inst locals_old links t2 in
@@ -328,7 +328,7 @@ let find_constr env symb =
     if (List.length cstrs > 1) then
       error (Typing_error
                ("Constructor have mutliple signatures : " ^ symb.c)) symb.p;
-    (try (List.hd cstrs).params with e ->
+    (try (List.hd cstrs).params with _e ->
        error (Typing_error ("Undefined Constructor : " ^ symb.c)) symb.p;)
   with Not_found ->
     error (Typing_error ("Undefined Constructor : " ^ symb.c)) symb.p
@@ -373,7 +373,7 @@ let mk_dt_dec (env,locals) dt (pars,cst_dec_list) =
         let ty = Smtlib_ty.new_type (Smtlib_ty.TVar s.c) in
         locals := SMap.add s.c ty !locals;
         ty
-        ) pars
+      ) pars
   in
   let dt_sort = find_simpl_sort_symb (env,locals) dt dt_pars in
   mk_constr_decs (env,!locals) dt dt_sort cst_dec_list
@@ -390,7 +390,7 @@ let mk_datatypes (env,locals) sort_decs datatype_decs =
   let env = List.fold_left (fun env (symb,arit) ->
       mk_sort_decl (env,locals) symb arit true
     ) env sort_decs in
-  let env = List.fold_left2 (fun env (symb, arit) dt_dec ->
+  let env = List.fold_left2 (fun env (symb, _arit) dt_dec ->
       mk_dt_dec (env,locals) symb dt_dec
     ) env sort_decs datatype_decs in
   env

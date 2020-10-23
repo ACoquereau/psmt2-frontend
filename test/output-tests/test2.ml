@@ -1,24 +1,10 @@
-(*== Build the example with:
-
-"ocamlopt -o standalone_minimal -I `ocamlfind query psmt2-frontend`
- psmt2Frontend.cmxa standalone_minimal.ml"
-
-if the lib is installed, or with:
-
-"ocamlopt -o standalone_minimal -I ../src psmt2Frontend.cmxa
- standalone_minimal.ml"
-
-if the lib is built but not installed
-
-==*)
-
 open Format
 
-module Smtlib_error = Psmt2Frontend.Smtlib_error
-module Options = Psmt2Frontend.Options
-module Smtlib_parser = Psmt2Frontend.Smtlib_parser
-module Smtlib_lexer = Psmt2Frontend.Smtlib_lexer
-module Smtlib_typing = Psmt2Frontend.Smtlib_typing
+module Smtlib_error = Psmt2_frontend.Smtlib_error
+module Options = Psmt2_frontend.Options
+module Smtlib_parser = Psmt2_frontend.Smtlib_parser
+module Smtlib_lexer = Psmt2_frontend.Smtlib_lexer
+module Smtlib_typing = Psmt2_frontend.Smtlib_typing
 
 let fmt = err_formatter
 
@@ -34,17 +20,17 @@ let usage = sprintf "usage: %s [options] file%s" Sys.argv.(1) smt2
 
 let spec =
   [
-   "-parse-only", Arg.Set parse_only, "  stops after parsing";
-   "-quiet", Arg.Set quiet, "  don't print warning";
-   "-verbose", Arg.Set_int verbose, "  1 : print typed ast, 2 : print typing env";
-   "-keep_loc", Arg.Set keep_loc, "keep location in AST"
+    "-parse-only", Arg.Set parse_only, "  stops after parsing";
+    "-quiet", Arg.Set quiet, "  don't print warning";
+    "-verbose", Arg.Set_int verbose, "  1 : print typed ast, 2 : print typing env";
+    "-keep_loc", Arg.Set keep_loc, "keep location in AST"
   ]
 
 let file =
   let file = ref None in
   let set_file s =
     if (not (Filename.check_suffix s psmt2)) &&
-      (not (Filename.check_suffix s smt2)) then
+       (not (Filename.check_suffix s smt2)) then
       raise (Arg.Bad "invalid extension");
     file := Some s
   in
@@ -83,4 +69,3 @@ let () =
   |Invalid_argument _ ->
     fprintf fmt "No input file given@.";
     exit 1
-

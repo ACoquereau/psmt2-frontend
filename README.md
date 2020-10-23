@@ -17,10 +17,7 @@ The easiest way to install psmt2-frontend is to use OPAM:
 If you want to install psmt2-frontend from sources, use the following
 instructions:
 
-    $ autoconf (if configure is not present)
-    $ ./configure
-    $ make opam-deps (if you are using OPAM and some deps are missing)
-    $ make
+    $ drom build
 
 to compile and install `psmt2-frontend` on your system.
 
@@ -29,7 +26,7 @@ You can uninstall the library with `make uninstall`.
 
 ## Minimal Examples
 
- See the file `tests/example.ml` for a small example of the usage of the library.
+ See the file `test/example.ml` for a small example of the usage of the library.
 
 
 ## Contributing

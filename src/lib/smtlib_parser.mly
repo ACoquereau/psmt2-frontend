@@ -88,7 +88,8 @@ prop_literal:
       { mk_data ($startpos,$endpos) (PropLit $1) }
     | LP symbol symbol RP
       { mk_data ($startpos,$endpos)
-        (if $2.c <> "not" then raise Error; PropLitNot $3) }
+        (if $2.c <> "not" then failwith "Prop literal can only be literal and negated literal"
+            ; PropLitNot $3) }
 
 sort:
     | identifier { mk_data ($startpos,$endpos) (SortIdentifier $1) }
