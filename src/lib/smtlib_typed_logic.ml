@@ -29,27 +29,27 @@ let new_fun params return assoc =
    assoc}
 
 let core = {
-  sorts = [ "Bool",((0,0),(fun s (l1,l2) ->
+  sorts = [ "Bool",((0,0),(fun _s (l1,l2) ->
       assert (l1 == [] && l2 == []); TBool))];
   funs = [
     "true", new_fun [] (new_type TBool) None;
-     "false", new_fun [] (new_type TBool) None;
-     "not", new_fun
+    "false", new_fun [] (new_type TBool) None;
+    "not", new_fun
       [(new_type TBool)]
       (new_type TBool) None;
-      "=>", new_fun
+    "=>", new_fun
       [(new_type TBool);
        (new_type TBool)]
       (new_type TBool) (Some Right);
-     "and", new_fun
+    "and", new_fun
       [(new_type TBool);
        (new_type TBool)]
       (new_type TBool) (Some Left);
-     "or", new_fun
+    "or", new_fun
       [(new_type TBool);
        (new_type TBool)]
       (new_type TBool) (Some Left);
-     "xor", new_fun
+    "xor", new_fun
       [(new_type TBool);
        (new_type TBool)]
       (new_type TBool) (Some Left);
@@ -67,48 +67,48 @@ let core = {
 }
 
 let ints = {
-  sorts = ["Int",((0,0),(fun s (l1,l2) ->
+  sorts = ["Int",((0,0),(fun _s (l1,l2) ->
       assert (l1 == [] && l2 == []); TInt))];
   funs = [
-     "-", new_fun
+    "-", new_fun
       [(new_type TInt)]
       (new_type TInt) None;
-     "-", new_fun
+    "-", new_fun
       [(new_type TInt);
        (new_type TInt)]
       (new_type TInt) (Some Left);
-     "+", new_fun
+    "+", new_fun
       [(new_type TInt);
        (new_type TInt)]
       (new_type TInt) (Some Left);
-     "*", new_fun
+    "*", new_fun
       [(new_type TInt);
        (new_type TInt)]
       (new_type TInt) (Some Left);
-     "div", new_fun
+    "div", new_fun
       [(new_type TInt);
        (new_type TInt)]
       (new_type TInt) (Some Left);
-     "mod", new_fun
+    "mod", new_fun
       [(new_type TInt);
        (new_type TInt)]
       (new_type TInt) None;
-     "abs", new_fun
+    "abs", new_fun
       [(new_type TInt)]
       (new_type TInt) None;
-     "<=", new_fun
+    "<=", new_fun
       [(new_type TInt);
        (new_type TInt)]
       (new_type TBool) (Some Chainable);
-     "<", new_fun
+    "<", new_fun
       [(new_type TInt);
        (new_type TInt)]
       (new_type TBool) (Some Chainable);
-     ">=", new_fun
+    ">=", new_fun
       [(new_type TInt);
        (new_type TInt)]
       (new_type TBool) (Some Chainable);
-     ">", new_fun
+    ">", new_fun
       [(new_type TInt);
        (new_type TInt)]
       (new_type TBool) (Some Chainable);
@@ -118,41 +118,41 @@ let ints = {
 }
 
 let reals = {
-  sorts = ["Real",((0,0),(fun s (l1,l2) ->
+  sorts = ["Real",((0,0),(fun _s (l1,l2) ->
       assert (l1 == [] && l2 == []); TReal))];
   funs = [
-     "-", new_fun
+    "-", new_fun
       [(new_type TReal)]
       (new_type TReal) None;
-     "-", new_fun
+    "-", new_fun
       [(new_type TReal);
        (new_type TReal)]
       (new_type TReal) (Some Left);
-     "+", new_fun
+    "+", new_fun
       [(new_type TReal);
        (new_type TReal)]
       (new_type TReal) (Some Left);
-     "*", new_fun
+    "*", new_fun
       [(new_type TReal);
        (new_type TReal)]
       (new_type TReal) (Some Left);
-     "/", new_fun
+    "/", new_fun
       [(new_type TReal);
        (new_type TReal)]
       (new_type TReal) (Some Left);
-     "<=", new_fun
+    "<=", new_fun
       [(new_type TReal);
        (new_type TReal)]
       (new_type TBool) (Some Chainable);
-     "<", new_fun
+    "<", new_fun
       [(new_type TReal);
        (new_type TReal)]
       (new_type TBool) (Some Chainable);
-     ">=", new_fun
+    ">=", new_fun
       [(new_type TReal);
        (new_type TReal)]
       (new_type TBool) (Some Chainable);
-     ">", new_fun
+    ">", new_fun
       [(new_type TReal);
        (new_type TReal)]
       (new_type TBool) (Some Chainable);
@@ -162,13 +162,13 @@ let reals = {
 let reals_ints = {
   sorts = List.rev_append ints.sorts reals.sorts;
   funs = List.rev_append (List.rev_append ints.funs reals.funs) [
-       "to_real", new_fun
+      "to_real", new_fun
         [(new_type TInt)]
         (new_type TReal) None;
-       "to_int", new_fun
+      "to_int", new_fun
         [(new_type TReal)]
         (new_type TInt) None;
-       "is_int", new_fun
+      "is_int", new_fun
         [(new_type TReal)]
         (new_type TBool) None;
     ];
@@ -178,18 +178,18 @@ let reals_ints = {
 let arrays =
   {
     sorts = ["Array",((2,0),
-                      (fun s (l1,l2) ->
+                      (fun _s (l1,l2) ->
                          let t1,t2 = List.hd l1, List.hd (List.tl l1) in
                          assert (List.length l1 = 2 && l2 == []);
                          TArray (t1,t2)))];
     funs = [
       (let x = new_type(TVar("X")) in
        let y = new_type(TVar("Y")) in
-        "select", new_fun
-          [new_type (TArray (x,y));x] y None);
+       "select", new_fun
+         [new_type (TArray (x,y));x] y None);
       (let x = new_type(TVar("X")) in
        let y = new_type(TVar("Y")) in
-        "store", new_fun
+       "store", new_fun
          [new_type (TArray (x,y));x;y]
          (new_type (TArray (x,y))) None);
     ];
@@ -199,161 +199,161 @@ let arrays =
 
 let floating_point = {
   sorts = [
-    "RoundingMode",((0,0), (fun s (l1,l2) ->
+    "RoundingMode",((0,0), (fun _s (l1,l2) ->
         assert (l1 == [] && l2 == []); TRoundingMode));
     "FloatingPoint",((0,2),
-                     (fun s (l1,l2) ->
+                     (fun _s (l1,l2) ->
                         match l1,l2 with
                         | [], [n1;n2] -> TFloatingPoint(n1,n2)
                         | _, _ -> assert false
                      ));
-    "Float16",((0,0), (fun s (l1,l2) ->
+    "Float16",((0,0), (fun _s (l1,l2) ->
         assert (l1 == [] && l2 == []); TFloatingPoint(5,11)));
-    "Float32",((0,0), (fun s (l1,l2) ->
+    "Float32",((0,0), (fun _s (l1,l2) ->
         assert (l1 == [] && l2 == []); TFloatingPoint(8,24)));
-    "Float64",((0,0), (fun s (l1,l2) ->
+    "Float64",((0,0), (fun _s (l1,l2) ->
         assert (l1 == [] && l2 == []); TFloatingPoint(11,53)));
-    "Float128",((0,0), (fun s (l1,l2) ->
+    "Float128",((0,0), (fun _s (l1,l2) ->
         assert (l1 == [] && l2 == []); TFloatingPoint(15,113)));
 
   ];
   funs = [
-     "roundNearestTiesToEven", new_fun
+    "roundNearestTiesToEven", new_fun
       [] (new_type TRoundingMode) None;
-     "RNE", new_fun
+    "RNE", new_fun
       [] (new_type TRoundingMode) None;
-     "roundNearestTiesToAway", new_fun
+    "roundNearestTiesToAway", new_fun
       [] (new_type TRoundingMode) None;
-     "RNA", new_fun
+    "RNA", new_fun
       [] (new_type TRoundingMode) None;
-     "roundTowardPositive", new_fun
+    "roundTowardPositive", new_fun
       [] (new_type TRoundingMode) None;
-     "RTP", new_fun
+    "RTP", new_fun
       [] (new_type TRoundingMode) None;
-     "roundTowardNegative", new_fun
+    "roundTowardNegative", new_fun
       [] (new_type TRoundingMode) None;
-     "RTN", new_fun
+    "RTN", new_fun
       [] (new_type TRoundingMode) None;
-     "roundTowardZero", new_fun
+    "roundTowardZero", new_fun
       [] (new_type TRoundingMode) None;
-     "RTZ", new_fun
+    "RTZ", new_fun
       [] (new_type TRoundingMode) None;
 
-     "fp", new_fun
-       [(new_type (TBitVec 0));
-        (new_type (TBitVec 0));
-        (new_type (TBitVec 0))]
-        (new_type (TFloatingPoint (0,0))) None;
+    "fp", new_fun
+      [(new_type (TBitVec 0));
+       (new_type (TBitVec 0));
+       (new_type (TBitVec 0))]
+      (new_type (TFloatingPoint (0,0))) None;
 
-     "fp", new_fun
-       [(new_type TInt);
-        (new_type TInt);
-        (new_type TInt)]
-        (new_type (TFloatingPoint (0,0))) None;
+    "fp", new_fun
+      [(new_type TInt);
+       (new_type TInt);
+       (new_type TInt)]
+      (new_type (TFloatingPoint (0,0))) None;
 
-     "fp.to_real", new_fun
-       [new_type (TFloatingPoint (0,0))]
-       (new_type TReal) None;
+    "fp.to_real", new_fun
+      [new_type (TFloatingPoint (0,0))]
+      (new_type TReal) None;
 
     (let x = new_type (TFloatingPoint (0,0)) in
-      "fp.abs", new_fun
+     "fp.abs", new_fun
        [x] x None);
 
     (let x = new_type (TFloatingPoint (0,0)) in
-      "fp.neg", new_fun
+     "fp.neg", new_fun
        [x] x None);
 
     (let x = new_type (TFloatingPoint (0,0)) in
-      "fp.add", new_fun
+     "fp.add", new_fun
        [(new_type TRoundingMode);x;x] x None);
 
     (let x = new_type (TFloatingPoint (0,0)) in
-      "fp.sub", new_fun
+     "fp.sub", new_fun
        [(new_type TRoundingMode);x;x] x None);
 
     (let x = new_type (TFloatingPoint (0,0)) in
-      "fp.mul", new_fun
+     "fp.mul", new_fun
        [(new_type TRoundingMode);x;x] x None);
 
     (let x = new_type (TFloatingPoint (0,0)) in
-      "fp.div", new_fun
+     "fp.div", new_fun
        [(new_type TRoundingMode);x;x] x None);
 
     (let x = new_type (TFloatingPoint (0,0)) in
-      "fp.fma", new_fun
+     "fp.fma", new_fun
        [(new_type TRoundingMode);x;x;x] x None);
 
     (let x = new_type (TFloatingPoint (0,0)) in
-      "fp.sqrt", new_fun
+     "fp.sqrt", new_fun
        [(new_type TRoundingMode);x] x None);
 
     (let x = new_type (TFloatingPoint (0,0)) in
-      "fp.rem", new_fun
+     "fp.rem", new_fun
        [x;x] x None);
 
     (let x = new_type (TFloatingPoint (0,0)) in
-      "fp.roundToIntegral", new_fun
+     "fp.roundToIntegral", new_fun
        [(new_type TRoundingMode);x] x None);
 
     (let x = new_type (TFloatingPoint (0,0)) in
-      "fp.min", new_fun
+     "fp.min", new_fun
        [x;x] x None);
 
     (let x = new_type (TFloatingPoint (0,0)) in
-      "fp.max", new_fun
+     "fp.max", new_fun
        [x;x] x None);
 
     (let x = new_type (TFloatingPoint (0,0)) in
-      "fp.leq", new_fun
+     "fp.leq", new_fun
        [x;x]
        (new_type TBool) (Some Chainable));
 
     (let x = new_type (TFloatingPoint (0,0)) in
-      "fp.lt", new_fun
+     "fp.lt", new_fun
        [x;x]
        (new_type TBool) (Some Chainable));
 
     (let x = new_type (TFloatingPoint (0,0)) in
-      "fp.geq", new_fun
+     "fp.geq", new_fun
        [x;x]
        (new_type TBool) (Some Chainable));
 
     (let x = new_type (TFloatingPoint (0,0)) in
-      "fp.gt", new_fun
+     "fp.gt", new_fun
        [x;x]
        (new_type TBool) (Some Chainable));
 
     (let x = new_type (TFloatingPoint (0,0)) in
-      "fp.eq", new_fun
+     "fp.eq", new_fun
        [x;x]
        (new_type TBool) (Some Chainable));
 
     (let x = new_type (TFloatingPoint (0,0)) in
-      "fp.isNormal", new_fun
+     "fp.isNormal", new_fun
        [x] (new_type TBool) None);
 
     (let x = new_type (TFloatingPoint (0,0)) in
-      "fp.isSubnormal", new_fun
+     "fp.isSubnormal", new_fun
        [x] (new_type TBool) None);
 
     (let x = new_type (TFloatingPoint (0,0)) in
-      "fp.isZero", new_fun
+     "fp.isZero", new_fun
        [x] (new_type TBool) None);
 
     (let x = new_type (TFloatingPoint (0,0)) in
-      "fp.isInfinite", new_fun
+     "fp.isInfinite", new_fun
        [x] (new_type TBool) None);
 
     (let x = new_type (TFloatingPoint (0,0)) in
-      "fp.isNaN", new_fun
+     "fp.isNaN", new_fun
        [x] (new_type TBool) None);
 
     (let x = new_type (TFloatingPoint (0,0)) in
-      "fp.isNegative", new_fun
+     "fp.isNegative", new_fun
        [x] (new_type TBool) None);
 
     (let x = new_type (TFloatingPoint (0,0)) in
-      "fp.isPositive", new_fun
+     "fp.isPositive", new_fun
        [x] (new_type TBool) None);
   ];
   par_funs = [
@@ -364,7 +364,7 @@ let floating_point = {
            let a = int_of_string a in
            let b = int_of_string b in
            new_fun [(new_type (TBitVec (a+b)))]
-           (new_type (TFloatingPoint (a,b))) None;
+             (new_type (TFloatingPoint (a,b))) None;
          | _ -> assert false
        )
     );
@@ -375,8 +375,8 @@ let floating_point = {
            let a = int_of_string a in
            let b = int_of_string b in
            new_fun [(new_type TRoundingMode);
-            (new_type (TFloatingPoint (0,0)))]
-           (new_type (TFloatingPoint (a,b))) None;
+                    (new_type (TFloatingPoint (0,0)))]
+             (new_type (TFloatingPoint (a,b))) None;
          | _ -> assert false
        )
     );
@@ -387,8 +387,8 @@ let floating_point = {
            let a = int_of_string a in
            let b = int_of_string b in
            new_fun [(new_type TRoundingMode);
-            (new_type TReal)]
-           (new_type (TFloatingPoint (a,b))) None;
+                    (new_type TReal)]
+             (new_type (TFloatingPoint (a,b))) None;
          | _ -> assert false
        )
     );
@@ -399,8 +399,8 @@ let floating_point = {
            let a = int_of_string a in
            let b = int_of_string b in
            new_fun [(new_type TRoundingMode);
-            (new_type (TBitVec 0))]
-           (new_type (TFloatingPoint (a,b))) None;
+                    (new_type (TBitVec 0))]
+             (new_type (TFloatingPoint (a,b))) None;
          | _ -> assert false
        )
     );
@@ -411,8 +411,8 @@ let floating_point = {
            let a = int_of_string a in
            let b = int_of_string b in
            new_fun [(new_type TRoundingMode);
-            (new_type (TBitVec 0))]
-           (new_type (TFloatingPoint (a,b))) None;
+                    (new_type (TBitVec 0))]
+             (new_type (TFloatingPoint (a,b))) None;
          | _ -> assert false
        )
     );
@@ -489,7 +489,7 @@ let floating_point = {
 
 let bit_vectors = {
   sorts = ["BitVec",((0,1),
-                     (fun s (l1,l2) ->
+                     (fun _s (l1,l2) ->
                         assert (List.length l2 = 1 && l1 == []);
                         TBitVec(List.hd l2)
                      ))];

@@ -1,24 +1,10 @@
-(*== Build the example with:
-
-  "ocamlopt -o standalone_minimal -I `ocamlfind query psmt2-frontend`
-  psmt2Frontend.cmxa standalone_minimal.ml"
-
-  if the lib is installed, or with:
-
-  "ocamlopt -o standalone_minimal -I ../src psmt2Frontend.cmxa
-  standalone_minimal.ml"
-
-  if the lib is built but not installed
-
-  ==*)
-
 open Format
 
-module Smtlib_error = Psmt2Frontend.Smtlib_error
-module Options = Psmt2Frontend.Options
-module Smtlib_parser = Psmt2Frontend.Smtlib_parser
-module Smtlib_lexer = Psmt2Frontend.Smtlib_lexer
-module Smtlib_typing = Psmt2Frontend.Smtlib_typing
+module Smtlib_error = Psmt2_frontend.Smtlib_error
+module Options = Psmt2_frontend.Options
+module Smtlib_parser = Psmt2_frontend.Smtlib_parser
+module Smtlib_lexer = Psmt2_frontend.Smtlib_lexer
+module Smtlib_typing = Psmt2_frontend.Smtlib_typing
 
 let fmt = Options.get_err_fmt ()
 
@@ -85,4 +71,3 @@ let () =
   |Invalid_argument _ ->
     fprintf fmt "No input file given@.";
     exit 1
-

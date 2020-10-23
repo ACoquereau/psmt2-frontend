@@ -49,9 +49,9 @@ let rec to_string t =
     if List.length tl = 0 then
       (Printf.sprintf "%s(Dt)" s)
     else (Printf.sprintf "%s(Dt)" s)^ "(" ^
-      (String.trim
-         (List.fold_left
-            (fun acc t -> acc^" "^(to_string t)) "" (List.rev tl))) ^ ")"
+         (String.trim
+            (List.fold_left
+               (fun acc t -> acc^" "^(to_string t)) "" (List.rev tl))) ^ ")"
   | TVar(s) -> Printf.sprintf "(%s:%d)" s t.id
   | TFun(pars,ret) ->
     Printf.sprintf "Fun : %s %s"
@@ -88,45 +88,45 @@ let rec inst links m t =
   try m, IMap.find t.id m
   with Not_found ->
     let m, t' = match t.desc with
-    | TDummy | TInt | TReal | TBool | TString -> m, t
-    | TArray (t1,t2) ->
-      let m1, t1' = inst links m t1 in
-      let m2, t2' = inst links m1 t2 in
-      m2, new_type (TArray(t1', t2'))
-    | TBitVec(n) -> m, new_type (TBitVec(n))
-    | TFloatingPoint(n1,n2) -> m, new_type (TFloatingPoint(n1,n2))
-    | TRoundingMode -> m, t
-    | TSort (s,tl) ->
-      let m,tl = List.fold_left (fun (m,tl) t ->
-          let m',t' = inst links m t in
-          m', t' :: tl
-        ) (m,[]) (List.rev tl) in
-      m, new_type (TSort(s,tl))
-    | TDatatype(s,tl) ->
-      let m,tl = List.fold_left (fun (m,tl) t ->
-          let m',t' = inst links m t in
-          m', t' :: tl
-        ) (m,[]) (List.rev tl) in
-      m, new_type (TDatatype(s,tl))
-    | TVar(s) -> begin
-      try
-        let ty = SMap.find s links in
-        if ty.id < t.id then
-          m, t
-        else
-          m, new_type (TDummy)
-      with Not_found ->
-        m, new_type (TDummy)
-    end
-    | TFun(pars, ret) ->
-      let m,pars = List.fold_left (fun (m,tl) t ->
-          let m',t' = inst links m t in
-          m', t' :: tl
-        ) (m,[]) (List.rev pars) in
-      let m,ret = inst links m ret in
-      m, new_type (TFun(pars,ret))
-    | TLink(t1) ->
-      inst links m (shorten t1)
+      | TDummy | TInt | TReal | TBool | TString -> m, t
+      | TArray (t1,t2) ->
+        let m1, t1' = inst links m t1 in
+        let m2, t2' = inst links m1 t2 in
+        m2, new_type (TArray(t1', t2'))
+      | TBitVec(n) -> m, new_type (TBitVec(n))
+      | TFloatingPoint(n1,n2) -> m, new_type (TFloatingPoint(n1,n2))
+      | TRoundingMode -> m, t
+      | TSort (s,tl) ->
+        let m,tl = List.fold_left (fun (m,tl) t ->
+            let m',t' = inst links m t in
+            m', t' :: tl
+          ) (m,[]) (List.rev tl) in
+        m, new_type (TSort(s,tl))
+      | TDatatype(s,tl) ->
+        let m,tl = List.fold_left (fun (m,tl) t ->
+            let m',t' = inst links m t in
+            m', t' :: tl
+          ) (m,[]) (List.rev tl) in
+        m, new_type (TDatatype(s,tl))
+      | TVar(s) -> begin
+          try
+            let ty = SMap.find s links in
+            if ty.id < t.id then
+              m, t
+            else
+              m, new_type (TDummy)
+          with Not_found ->
+            m, new_type (TDummy)
+        end
+      | TFun(pars, ret) ->
+        let m,pars = List.fold_left (fun (m,tl) t ->
+            let m',t' = inst links m t in
+            m', t' :: tl
+          ) (m,[]) (List.rev pars) in
+        let m,ret = inst links m ret in
+        m, new_type (TFun(pars,ret))
+      | TLink(t1) ->
+        inst links m (shorten t1)
     in
     let m = IMap.add t.id t' m in
     m, t'
@@ -140,30 +140,30 @@ let rec subst m t =
     let t1' = subst m t1 in
     let t2' = subst m t2 in
     new_type (TArray(t1', t2'))
-  | TBitVec(n) -> t
-  | TFloatingPoint(n1,n2) -> t
+  | TBitVec(_n) -> t
+  | TFloatingPoint(_n1,_n2) -> t
   | TRoundingMode -> t
   | TSort (s,tl) ->
     let tl = List.fold_left (fun tl t ->
-          let t' = subst m t in
-          t' :: tl
-        ) [] (List.rev tl) in
-      new_type (TSort(s,tl))
-    | TDatatype(s,tl) ->
+        let t' = subst m t in
+        t' :: tl
+      ) [] (List.rev tl) in
+    new_type (TSort(s,tl))
+  | TDatatype(s,tl) ->
     let tl = List.fold_left (fun tl t ->
-          let t' = subst m t in
-          t' :: tl
-        ) [] (List.rev tl) in
+        let t' = subst m t in
+        t' :: tl
+      ) [] (List.rev tl) in
     new_type (TDatatype(s,tl))
-    | TVar(s) -> t
-    | TFun(pars, ret) ->
-      let pars = List.fold_left (fun tl t ->
-          let t' = subst m t in
-          t' :: tl
-        ) [] (List.rev pars) in
-      let ret = subst m ret in
-      new_type (TFun(pars,ret))
-    | TLink(t) -> subst m (shorten t)
+  | TVar(_s) -> t
+  | TFun(pars, ret) ->
+    let pars = List.fold_left (fun tl t ->
+        let t' = subst m t in
+        t' :: tl
+      ) [] (List.rev pars) in
+    let ret = subst m ret in
+    new_type (TFun(pars,ret))
+  | TLink(t) -> subst m (shorten t)
 
 
 let rec unify t1 t2 pos =
@@ -176,15 +176,15 @@ let rec unify t1 t2 pos =
       | TDummy, TDummy -> t1.desc <- (TLink t2)
       | TDummy, _ -> t1.desc <- (TLink(shorten t2))
       | _, TDummy -> t2.desc <- (TLink(shorten t1))
-      | TVar(s1), TVar(s2) ->
+      | TVar(_s1), TVar(_s2) ->
         if t1.id <> t2.id then
           (error (Type_clash_error( to_string t1, to_string t2)) pos)
       | TInt, TInt | TReal, TReal | TBool, TBool | TString, TString
       | TRoundingMode, TRoundingMode  -> ()
       | TInt, TReal | TReal, TInt ->
         assert false
-        (* if not( get_is_int_real ()) then
-         *   (error (Type_clash_error( to_string t1, to_string t2)) pos) *)
+      (* if not( get_is_int_real ()) then
+       *   (error (Type_clash_error( to_string t1, to_string t2)) pos) *)
       | TArray(t1a,t1b), TArray(t2a,t2b) ->
         unify t1a t2a pos; unify t1b t2b pos
       | TBitVec(n1), TBitVec(n2) ->

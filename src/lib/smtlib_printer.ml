@@ -71,8 +71,8 @@ and print_term t =
     | TermExistsTerm (sorted_vars,term) ->
       sprintf "(exists (%s) %s)"
         (print_sorted_vars sorted_vars) (print_term term)
-    | TermExclimationPt (term,key_term_list) -> (print_term term)
-    | TermMatch (term,pattern_term_list) ->
+    | TermExclimationPt (term,_key_term_list) -> (print_term term)
+    | TermMatch (_term,_pattern_term_list) ->
       Options.check_command "printer for match terms"; ""
   in
   sprintf "%s:%s " s ((to_string t.ty))
@@ -91,7 +91,7 @@ and print_sorted_vars sorted_vars =
 
 let print_assert pars t =
   if pars = [] then
-      sprintf "%s" (print_term t)
+    sprintf "%s" (print_term t)
   else
     sprintf "(par (%s) %s)" (print_pars pars) (print_term t)
 
@@ -101,16 +101,16 @@ let print_const_dec pars sort =
   | _ -> sprintf "(par (%s) %s)" (print_pars pars) (print_sort sort)
 
 let print_fun_dec (pars,sl,s) =
-match pars with
+  match pars with
   | [] -> sprintf "(%s) %s" (print_sorts sl) (print_sort s)
   | _ -> sprintf "(par (%s) (%s) %s)"
-      (print_pars pars) (print_sorts sl) (print_sort s)
+           (print_pars pars) (print_sorts sl) (print_sort s)
 
 let print_fun_def (symb,pars,svl,s) =
   match pars with
   | [] -> sprintf "%s (%s) %s" symb.c (print_sorted_vars svl) (print_sort s)
   | _ -> sprintf "%s (par (%s) (%s) %s)"
-      symb.c (print_pars pars) (print_sorted_vars svl) (print_sort s)
+           symb.c (print_pars pars) (print_sorted_vars svl) (print_sort s)
 
 let print_sort_dec (s,n) =
   sprintf "(%s %s)" s.c n
@@ -127,19 +127,19 @@ let print_dt_dec (pars,cst_dec_list) =
   match pars with
   | [] -> sprintf "(%s)" (print_list print_cst_dec cst_dec_list)
   | _ -> sprintf "(par (%s) (%s))"
-      (print_pars pars)
-      (print_list print_cst_dec cst_dec_list)
+           (print_pars pars)
+           (print_list print_cst_dec cst_dec_list)
 
 let print_pro_lit p =
   match p.c with
   | PropLit(s) -> sprintf "%s" s.c
   | PropLitNot(s) -> sprintf "(not %s)" s.c
 
-let print_option o =
+let print_option _o =
   Options.check_command "printer for get/set-option"; ""
-let print_info key_info =
+let print_info _key_info =
   Options.check_command "printer for get/set-option"; ""
-let print_attribute a =
+let print_attribute _a =
   Options.check_command "printer for get/set-option"; ""
 
 let print_command c =
@@ -161,8 +161,8 @@ let print_command c =
     printf "(declare-datatype %s %s)\n%!" symbol.c (print_dt_dec (pars,dt_dec))
   | Cmd_DeclareDataTypes(sort_dec_list,dt_dec_list) ->
     printf "(declare-datatypes %s %s)\n%!"
-    (print_list print_sort_dec sort_dec_list)
-    (print_list print_dt_dec dt_dec_list)
+      (print_list print_sort_dec sort_dec_list)
+      (print_list print_dt_dec dt_dec_list)
 
   | Cmd_DeclareFun(symbol,fun_dec) ->
     printf "(declare-fun %s %s)\n%!" symbol.c (print_fun_dec fun_dec)
@@ -218,7 +218,7 @@ let print_sort s (arit_s, arit_t) =
 let print_fun s fun_def =
   Printf.printf "%s : %s \n%!" s (Smtlib_ty.to_string fun_def.params)
 
-let print_par_fun s fun_def =
+let print_par_fun s _fun_def =
   Printf.printf "%s : par fun  \n%!" s
 
 let print_env env =
