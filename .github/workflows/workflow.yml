@@ -27,8 +27,8 @@ jobs:
 
         include:
           - os: ubuntu-latest
-            ocaml-version: 4.04.0
-            skip_test: true
+            ocaml-version: 4.04.2
+            skip_test: false
 
 
     runs-on: ${{ matrix.os }}
