@@ -15,6 +15,7 @@ windows-ci = true
 
 dev-repo = "https://github.com/OCamlPro-Coquera/psmt2-frontend/tree/next"
 bug-reports = "https://github.com/OCamlPro-Coquera/psmt2-frontend/issues"
+homepage = "https://github.com/OCamlPro-Coquera/psmt2-frontend/"
 
 # keys that you could also define:
 # build-profile = "...build-profile..."
@@ -22,7 +23,6 @@ bug-reports = "https://github.com/OCamlPro-Coquera/psmt2-frontend/issues"
 # archive = "...archive..."
 # doc-api = "...doc-api..."
 # doc-gen = "...doc-gen..."
-# homepage = "...homepage..."
 # github-organization = "...github-organization..."
 
 [project]

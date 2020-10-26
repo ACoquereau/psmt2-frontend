@@ -11,6 +11,7 @@ standard with prenex polymorphism.
 """
 authors: ["Albin Coquereau"]
 maintainer: ["Albin Coquereau"]
+homepage: "https://github.com/OCamlPro-Coquera/psmt2-frontend/"
 bug-reports: "https://github.com/OCamlPro-Coquera/psmt2-frontend/issues"
 dev-repo:
   "git+https://github.com/OCamlPro-Coquera/psmt2-frontend/tree/next.git"
