@@ -66,4 +66,5 @@ gen-version = "version.ml"
 kind = "library"
 name = "psmt2-frontend"
 skeleton = "library"
+pack = "Psmt2Frontend"
 
