@@ -10,7 +10,7 @@ min-edition = "4.04.0"
 mode = "binary"
 name = "psmt2-frontend"
 synopsis = "The psmt2-frontend project"
-version = "0.3.0"
+version = "dev"
 windows-ci = true
 
 dev-repo = "https://github.com/OCamlPro-Coquera/psmt2-frontend/tree/next"
