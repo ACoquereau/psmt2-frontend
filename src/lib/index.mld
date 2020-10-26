@@ -5,4 +5,4 @@ An OCaml library to parse and type-check a conservative extension of the SMT-LIB
 standard with prenex polymorphism.
 
 
-The entry point of this library is the module: {!Psmt2_frontend}.
+The entry point of this library is the module: {!Psmt2Frontend}.

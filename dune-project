@@ -3,7 +3,7 @@
 (name psmt2-frontend)
 (allow_approximate_merlin)
 (generate_opam_files false)
-(version 0.3.0)
+(version dev)
 (formatting (enabled_for ocaml reason))
 
 (package
@@ -11,12 +11,13 @@
  (synopsis "The psmt2-frontend project")
  (description "An OCaml library to parse and type-check a conservative extension of the SMT-LIB 2\nstandard with prenex polymorphism.\n")
  (depends
-   (ocaml (>= 4.04.0))
+   (ocaml (>= 4.04.2))
    (psmt2-frontend (= version))
    ppx_inline_test
    ppx_expect
    odoc
    ocamlformat
+   menhir
  ))
 
 (package
@@ -24,11 +25,11 @@
  (synopsis "The psmt2-frontend project")
  (description "An OCaml library to parse and type-check a conservative extension of the SMT-LIB 2\nstandard with prenex polymorphism.\n")
  (depends
-   (ocaml (>= 4.04.0))
-   menhir
+   (ocaml (>= 4.04.2))
    ppx_inline_test
    ppx_expect
    odoc
    ocamlformat
+   menhir
  ))
 (using menhir 2.0)
