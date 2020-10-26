@@ -11,6 +11,7 @@ Welcome to psmt2-frontend
    :maxdepth: 2
    :caption: Documentation
 
+   Home <https://github.com/OCamlPro-Coquera/psmt2-frontend/>
    about
    install
    license
