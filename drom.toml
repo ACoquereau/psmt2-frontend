@@ -16,11 +16,12 @@ windows-ci = true
 dev-repo = "https://github.com/OCamlPro-Coquera/psmt2-frontend/tree/next"
 bug-reports = "https://github.com/OCamlPro-Coquera/psmt2-frontend/issues"
 homepage = "https://github.com/OCamlPro-Coquera/psmt2-frontend/"
+archive = "https://github.com/OCamlPro-Coquera/psmt2-frontend/archive/0.3.tar.gz"
 
 # keys that you could also define:
 # build-profile = "...build-profile..."
 # sphinx-target = "...sphinx-target..."
-# archive = "...archive..."
+
 # doc-api = "...doc-api..."
 # doc-gen = "...doc-gen..."
 # github-organization = "...github-organization..."
