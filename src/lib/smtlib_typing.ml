@@ -222,6 +222,8 @@ let get_fun_def_locals (env,locals) (name,pars,params,return) =
   let params = List.map (fun (_,sort) -> sort) params in
   locals, ret, (name,params,return)
 
+let assertion_stack = Stack.create ()
+
 (******************************************************************************)
 (************************************ Commands ********************************)
 let type_command (env,locals) c =
@@ -290,8 +292,30 @@ let type_command (env,locals) c =
   | Cmd_SetLogic(symb) -> Smtlib_typed_logic.set_logic env symb
   | Cmd_SetOption (_option) -> Options.check_command "set-option"; env
   | Cmd_SetInfo (_attribute) -> Options.check_command "set-info"; env
-  | Cmd_Push _n | Cmd_Pop _n ->
-    warning (Options.get_err_fmt ()) (Incremental_error ("incremental command not suported")) c.p; env
+  | Cmd_Push n -> begin
+      try
+        let n = int_of_string n in
+        for _i = 0 to n do
+          Stack.push env assertion_stack
+        done;
+        env
+      with _ ->
+        error (Incremental_error ("Push argument must be an integer")) c.p
+    end
+  | Cmd_Pop n -> begin
+      let env = ref env in
+      try
+        let n = int_of_string n in
+        for _i = 0 to n do
+          env := Stack.pop assertion_stack
+        done;
+        !env
+      with
+      | Stack.Empty ->
+        error (Incremental_error ("Too many pop command")) c.p
+      | _ ->
+        error (Incremental_error ("Pop argument must be an integer")) c.p
+    end
   | Cmd_Exit -> env
 
 
