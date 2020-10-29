@@ -295,7 +295,7 @@ let type_command (env,locals) c =
   | Cmd_Push n -> begin
       try
         let n = int_of_string n in
-        for _i = 0 to n do
+        for _i = 0 to (n - 1 ) do
           Stack.push env assertion_stack
         done;
         env
@@ -306,7 +306,7 @@ let type_command (env,locals) c =
       let env = ref env in
       try
         let n = int_of_string n in
-        for _i = 0 to n do
+        for _i = 0 to (n -1) do
           env := Stack.pop assertion_stack
         done;
         !env
