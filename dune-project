@@ -32,3 +32,4 @@
    ocamlformat
    menhir
  ))
+(using menhir 2.0)
