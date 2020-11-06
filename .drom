@@ -2,13 +2,53 @@
 
 # hash of toml configuration files
 # used for generation of all files
-c0670b160cd916d1ea4e435e9dc4e4f7:.
+a06202f351b35c52ac2ea571392122b5:.
 # end context for .
+
+# begin context for .github/workflows/doc-deploy.yml
+# file .github/workflows/doc-deploy.yml
+0767600df8b4e1a45a4f2cccf5f2fd07:.github/workflows/doc-deploy.yml
+# end context for .github/workflows/doc-deploy.yml
+
+# begin context for .gitignore
+# file .gitignore
+7b0080fc2a9bc3479bd0f997c4d3cc32:.gitignore
+# end context for .gitignore
+
+# begin context for Makefile
+# file Makefile
+74c5ac6257deca05fe4be7263eacebfc:Makefile
+# end context for Makefile
+
+# begin context for docs/README.txt
+# file docs/README.txt
+17799aeb2a3684b565725290ec32e65b:docs/README.txt
+# end context for docs/README.txt
+
+# begin context for docs/favicon.png
+# file docs/favicon.png
+7ea9be52d489cbe8c03b43ecf6b2650f:docs/favicon.png
+# end context for docs/favicon.png
+
+# begin context for docs/index.html
+# file docs/index.html
+b5751808ae72b235dfac389615953425:docs/index.html
+# end context for docs/index.html
+
+# begin context for docs/style.css
+# file docs/style.css
+0085152add896d7bab7b1a744d2a9af7:docs/style.css
+# end context for docs/style.css
 
 # begin context for drom.toml
 # file drom.toml
 ebed3a9019eec353445cdf96689b6b23:drom.toml
 # end context for drom.toml
+
+# begin context for dune
+# file dune
+02ae2bb9a93e7611894f35f89f15ab0e:dune
+# end context for dune
 
 # begin context for dune-project
 # file dune-project
