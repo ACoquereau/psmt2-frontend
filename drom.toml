@@ -2,7 +2,7 @@
 drom-version = "0.1.0"
 
 [project]
-archive = "https://github.com/OCamlPro-Coquera/psmt2-frontend/archive/0.3.tar.gz"
+archive = "https://github.com/OCamlPro-Coquera/psmt2-frontend/archive/0.3.1.tar.gz"
 authors = ["Albin Coquereau"]
 bug-reports = "https://github.com/OCamlPro-Coquera/psmt2-frontend/issues"
 copyright = "Albin Coquereau"
