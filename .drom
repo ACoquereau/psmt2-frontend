@@ -55,6 +55,16 @@ b5751808ae72b235dfac389615953425:docs/index.html
 a32b169194a45019293892b53ef6b2bc:dune-project
 # end context for dune-project
 
+# begin context for psmt2-frontend.opam
+# file psmt2-frontend.opam
+838f443afe8490689bff5435f3abd306:psmt2-frontend.opam
+# end context for psmt2-frontend.opam
+
+# begin context for psmt2-frontend_bin.opam
+# file psmt2-frontend_bin.opam
+768232afc420ef4c1b5666ef3e42de74:psmt2-frontend_bin.opam
+# end context for psmt2-frontend_bin.opam
+
 # begin context for src/bin/package.toml
 # file src/bin/package.toml
 dea23aaee88271953b1dd68f9b719637:src/bin/package.toml
