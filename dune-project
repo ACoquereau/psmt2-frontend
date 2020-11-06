@@ -3,7 +3,7 @@
 (name psmt2-frontend)
 (allow_approximate_merlin)
 (generate_opam_files false)
-(version dev)
+(version 0.3.0)
 (formatting (enabled_for ocaml reason))
 
 (package
@@ -32,4 +32,3 @@
    ocamlformat
    menhir
  ))
-(using menhir 2.0)
