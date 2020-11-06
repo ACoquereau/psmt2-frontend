@@ -25,9 +25,10 @@
  (deps test2.exe))
 
 (rule
- (with-stdout-to
+(deps min.smt2)
+(action (with-stdout-to
   test2.output
-  (run %{exe:test2.exe})))
+  (run %{exe:test2.exe} min.smt2))))
 
 (rule
  (alias runtest)
