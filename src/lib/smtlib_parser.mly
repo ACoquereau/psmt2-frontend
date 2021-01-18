@@ -28,6 +28,7 @@ DEFINEFUN DEFINEFUNREC DEFINEFUNSREC DEFINESORT
 GETASSERT GETASSIGN GETINFO GETOPTION GETPROOF GETUNSATCORE
 GETVALUE GETMODEL GETUNSATASSUMPTIONS
 SETINFO SETLOGIC SETOPTION
+MINIMIZE MAXIMIZE
 
 %token ALLSTATS AUTHORS AUTHOR AXIOMS CATEGORY DEFINITIO DIFFICULTY INCREMENTAL
 INSTANCE DIAGNOOUTPUTCHAN ERRORBEHAV EXTENSIONS FUNS FUNSDESCRIPT GLOBALDECLARATIONS
@@ -324,6 +325,11 @@ command:
          mk_data ($startpos,$endpos) (Cmd_SetLogic $3) }
     | LP SETOPTION option RP
         {mk_data ($startpos,$endpos) (Cmd_SetOption $3) }
+    | LP MAXIMIZE term RP
+        { mk_data ($startpos,$endpos) (Cmd_Maximize ($3)) }
+    | LP MINIMIZE term RP
+        { mk_data ($startpos,$endpos) (Cmd_Minimize ($3)) }
+
 
 commands:
     | EOF              { [] }

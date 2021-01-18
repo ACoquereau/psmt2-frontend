@@ -111,6 +111,8 @@ rule token = parse
 | "get-option" { GETOPTION }
 | "get-info" { GETINFO }
 | "get-model" { GETMODEL }
+| "minimize" {MINIMIZE}
+| "maximize" {MAXIMIZE}
 | "reset" { RESET }
 | "reset-assertions" { RESETASSERTIONS }
 | "exit" { EXIT }

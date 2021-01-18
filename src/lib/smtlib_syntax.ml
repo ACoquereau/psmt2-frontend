@@ -191,8 +191,10 @@ type command_aux =
   | Cmd_Push of string
   | Cmd_Pop of string
   | Cmd_Exit
+  | Cmd_Maximize of term
+  | Cmd_Minimize of term
+
 type command = command_aux data
 type commands = command list
 
 (*******************************************************************)
-
