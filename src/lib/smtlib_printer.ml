@@ -202,6 +202,8 @@ let print_command c =
   | Cmd_Push(n) -> printf "(push %s)\n%!" n
   | Cmd_Pop(n) -> printf "(pop %s)\n%!" n
   | Cmd_Exit -> printf "(exit)\n"
+  | Cmd_Minimize t -> printf "(minimize %s)\n%!" (print_term t)
+  | Cmd_Maximize t -> printf "(minimize %s)\n%!" (print_term t)
 
 let print commands =
   List.iter print_command commands
