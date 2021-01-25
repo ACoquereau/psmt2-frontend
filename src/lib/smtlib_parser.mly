@@ -324,6 +324,17 @@ command:
          mk_data ($startpos,$endpos) (Cmd_SetLogic $3) }
     | LP SETOPTION option RP
         {mk_data ($startpos,$endpos) (Cmd_SetOption $3) }
+  | LP symbol term RP {
+         let { c = cmd; p; _ } = $2 in
+         let t = $3 in
+         match cmd with
+         | "minimize" -> mk_data ($startpos,$endpos) (Cmd_Minimize t)
+         | "maximize" -> mk_data ($startpos,$endpos) (Cmd_Minimize t)
+         | _ ->
+            let err = Format.sprintf "Unexpected command %S" cmd in
+            raise Smtlib_error.(Error (Syntax_error err, p))
+       }
+
 
 commands:
     | EOF              { [] }
