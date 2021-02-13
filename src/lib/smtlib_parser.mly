@@ -21,7 +21,7 @@
 %token EOF AS EXISTS FORALL  LET LP POP PUSH ECHO RP UNDERSCORE PAR  PATTERN
 MATCH EXCLIMATIONPT
 
-%token ASSERT CHECKSAT EXIT RESET RESETASSERTIONS CHECKSATASSUMING
+%token ASSERT CHECKSAT CHECKALLSAT EXIT RESET RESETASSERTIONS CHECKSATASSUMING
  CHECKENTAILMENT
 DECLAREFUN DECLARESORT DECLARECONST  DECLAREDATATYPES DECLAREDATATYPE
 DEFINEFUN DEFINEFUNREC DEFINEFUNSREC DEFINESORT
@@ -268,6 +268,8 @@ command:
         {mk_data ($startpos,$endpos) (Cmd_CheckSatAssum $4) }
     | LP CHECKENTAILMENT assert_dec RP
         {mk_data ($startpos,$endpos) (Cmd_CheckEntailment $3) }
+    | LP CHECKALLSAT list(symbol) RP
+        {mk_data ($startpos,$endpos) (Cmd_CheckAllSat $3) }
     | LP DECLARECONST symbol const_dec RP
         {mk_data ($startpos,$endpos) (Cmd_DeclareConst ($3,$4)) }
     | LP DECLAREDATATYPE symbol datatype_dec RP

@@ -160,6 +160,7 @@ and constructor_dec = symbol * selector_dec list
 type command_aux =
   | Cmd_Assert of (symbol list * term)
   | Cmd_CheckSat
+  | Cmd_CheckAllSat of symbol list
   | Cmd_CheckSatAssum of prop_literal list
   | Cmd_CheckEntailment of (symbol list * term)
   | Cmd_DeclareConst of symbol * (symbol list * sort)

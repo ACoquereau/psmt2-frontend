@@ -154,6 +154,11 @@ let print_command c =
     printf "(check-sat-assuming %s)\n%!"
       (print_list print_pro_lit prop_lit_list)
 
+  | Cmd_CheckAllSat tl ->
+      let tl = List.map (fun symb -> symb.c) tl in
+      let s = String.concat " " tl in
+      printf "(check-all-sat %s)\n%!" s
+
   | Cmd_DeclareConst(symbol,(pars,sort)) ->
     printf "(declare-const %s %s)\n%!" symbol.c (print_const_dec pars sort)
 
