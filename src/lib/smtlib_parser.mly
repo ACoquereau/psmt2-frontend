@@ -331,7 +331,7 @@ command:
          let t = $3 in
          match cmd with
          | "minimize" -> mk_data ($startpos,$endpos) (Cmd_Minimize t)
-         | "maximize" -> mk_data ($startpos,$endpos) (Cmd_Minimize t)
+         | "maximize" -> mk_data ($startpos,$endpos) (Cmd_Maximize t)
          | _ ->
             let err = Format.sprintf "Unexpected command %S" cmd in
             raise Smtlib_error.(Error (Syntax_error err, p))
