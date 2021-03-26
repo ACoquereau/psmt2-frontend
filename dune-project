@@ -3,7 +3,7 @@
 (name psmt2-frontend)
 (allow_approximate_merlin)
 (generate_opam_files false)
-(version 0.3.1)
+(version 0.4.0)
 (formatting (enabled_for ocaml reason))
 
 (package

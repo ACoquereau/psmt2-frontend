@@ -2,7 +2,7 @@
 drom-version = "0.1.0"
 
 [project]
-archive = "https://github.com/OCamlPro-Coquera/psmt2-frontend/archive/0.3.1.tar.gz"
+archive = "https://github.com/OCamlPro-Coquera/psmt2-frontend/archive/0.4.0.tar.gz"
 authors = ["Albin Coquereau"]
 bug-reports = "https://github.com/OCamlPro-Coquera/psmt2-frontend/issues"
 copyright = "Albin Coquereau"
@@ -14,7 +14,7 @@ min-edition = "4.04.2"
 mode = "binary"
 name = "psmt2-frontend"
 synopsis = "The psmt2-frontend project"
-version = "0.3.1"
+version = "0.4.0"
 windows-ci = true
 
 # keys that you could also define:
@@ -59,4 +59,3 @@ dir = "src/bin"
 
 [[package]]
 dir = "src/lib"
-
