@@ -1,4 +1,3 @@
-
 .PHONY: all build-deps doc sphinx odoc view fmt fmt-check install dev-deps test
 DEV_DEPS := merlin ocamlformat odoc ppx_expect ppx_inline_test
 
