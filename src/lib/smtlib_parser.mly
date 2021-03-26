@@ -21,7 +21,7 @@
 %token EOF AS EXISTS FORALL  LET LP POP PUSH ECHO RP UNDERSCORE PAR  PATTERN
 MATCH EXCLIMATIONPT
 
-%token ASSERT CHECKSAT EXIT RESET RESETASSERTIONS CHECKSATASSUMING
+%token ASSERT CHECKSAT CHECKALLSAT EXIT RESET RESETASSERTIONS CHECKSATASSUMING
  CHECKENTAILMENT
 DECLAREFUN DECLARESORT DECLARECONST  DECLAREDATATYPES DECLAREDATATYPE
 DEFINEFUN DEFINEFUNREC DEFINEFUNSREC DEFINESORT
@@ -268,6 +268,8 @@ command:
         {mk_data ($startpos,$endpos) (Cmd_CheckSatAssum $4) }
     | LP CHECKENTAILMENT assert_dec RP
         {mk_data ($startpos,$endpos) (Cmd_CheckEntailment $3) }
+    | LP CHECKALLSAT list(symbol) RP
+        {mk_data ($startpos,$endpos) (Cmd_CheckAllSat $3) }
     | LP DECLARECONST symbol const_dec RP
         {mk_data ($startpos,$endpos) (Cmd_DeclareConst ($3,$4)) }
     | LP DECLAREDATATYPE symbol datatype_dec RP
@@ -324,6 +326,17 @@ command:
          mk_data ($startpos,$endpos) (Cmd_SetLogic $3) }
     | LP SETOPTION option RP
         {mk_data ($startpos,$endpos) (Cmd_SetOption $3) }
+  | LP symbol term RP {
+         let { c = cmd; p; _ } = $2 in
+         let t = $3 in
+         match cmd with
+         | "minimize" -> mk_data ($startpos,$endpos) (Cmd_Minimize t)
+         | "maximize" -> mk_data ($startpos,$endpos) (Cmd_Maximize t)
+         | _ ->
+            let err = Format.sprintf "Unexpected command %S" cmd in
+            raise Smtlib_error.(Error (Syntax_error err, p))
+       }
+
 
 commands:
     | EOF              { [] }

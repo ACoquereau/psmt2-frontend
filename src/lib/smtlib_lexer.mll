@@ -100,6 +100,7 @@ rule token = parse
 | "echo" { ECHO }
 | "assert" { ASSERT }
 | "check-sat" { CHECKSAT }
+| "check-all-sat" { CHECKALLSAT }
 | "check-sat-assuming" { CHECKSATASSUMING }
 | "check-entailment" { CHECKENTAILMENT }
 | "get-assertions" { GETASSERT }

@@ -233,6 +233,25 @@ let type_command (env,locals) c =
     Smtlib_ty.unify
       (Smtlib_ty.new_type Smtlib_ty.TBool) (get_term (env,locals) pars t) t.p;
     env
+
+  | Cmd_CheckAllSat tl ->
+      let pars = [] in
+      let idl = [] in
+      List.iter (fun symb ->
+          let ty = find_par_ty (env,locals) symb pars idl in
+          Smtlib_ty.unify (Smtlib_ty.new_type Smtlib_ty.TBool) ty symb.p
+        ) tl;
+      env
+
+  | Cmd_Minimize t | Cmd_Maximize t ->
+      let t' = get_term (env,locals) [] t in
+      begin
+        (* try to typecheck it as an Int, then as a real if it fails *)
+        try Smtlib_ty.unify (Smtlib_ty.new_type Smtlib_ty.TInt) t' t.p
+        with _ -> Smtlib_ty.unify (Smtlib_ty.new_type Smtlib_ty.TReal) t' t.p
+      end;
+      env
+
   | Cmd_CheckSat -> env
   | Cmd_CheckSatAssum _prop_lit ->
     Options.check_command "check-sat-assuming";
